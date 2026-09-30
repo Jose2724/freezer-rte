@@ -133,9 +133,9 @@ p.hint{color:var(--muted);font-size:14px;margin:6px 0 12px;max-width:62ch}
 .tg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px 12px}
 .tg div{min-width:0}
 .tg label{display:block;font-family:var(--f-display);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em;opacity:.75}
-.tg span{font-family:var(--f-mono);font-weight:600;font-size:16px;overflow-wrap:anywhere}
+.tg>div>span{font-family:var(--f-mono);font-weight:600;font-size:16px;overflow-wrap:anywhere}
 .tg .wide{grid-column:span 2}
-.tg .big span{font-size:26px}
+.tg .big>span{font-size:24px}
 .where{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:14px 0 4px}
 .where .fz{font-family:var(--f-display);font-weight:700;font-size:24px;text-transform:uppercase}
 .where .sp{font-family:var(--f-mono);font-weight:600;font-size:28px;background:var(--accent);color:var(--accent-ink);border-radius:6px;padding:0 10px}
@@ -179,9 +179,31 @@ textarea#copyBox{width:100%;height:120px;margin-top:10px;font-family:var(--f-mon
 
 /* bottom sheet */
 .backdrop{position:fixed;inset:0;background:rgba(5,12,20,.5);z-index:20}
-.sheet{position:fixed;left:0;right:0;bottom:0;z-index:21;max-height:90%;overflow:auto;background:var(--bg);border-radius:16px 16px 0 0;padding:14px 16px calc(20px + env(safe-area-inset-bottom,0px));max-width:760px;margin:0 auto;box-shadow:0 -8px 30px rgba(0,0,0,.25)}
-.sheet .grab{width:44px;height:5px;border-radius:5px;background:var(--line);margin:0 auto 10px}
-.sheet .x{float:right;border:0;background:var(--surface);border-radius:99px;width:40px;height:40px;font-size:20px}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:21;display:flex;flex-direction:column;max-height:calc(100% - env(safe-area-inset-top,0px) - 20px);background:var(--bg);border-radius:16px 16px 0 0;max-width:760px;margin:0 auto;box-shadow:0 -8px 30px rgba(0,0,0,.25);overflow:hidden}
+.sh-head{flex:none;position:relative;display:flex;align-items:center;gap:10px;padding:18px 12px 10px 16px;border-bottom:1px solid var(--line)}
+.sh-head .grab{position:absolute;top:6px;left:50%;transform:translateX(-50%);width:44px;height:5px;border-radius:5px;background:var(--line)}
+.sh-title{flex:1;min-width:0;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.sh-title .rack{font-family:var(--f-mono);font-weight:600;font-size:20px;background:var(--ticket);color:var(--ticket-ink);border-radius:6px;padding:3px 8px}
+.sh-title .loc{font-family:var(--f-display);font-weight:700;font-size:18px;text-transform:uppercase;letter-spacing:.02em}
+.sh-title .loc b{font-family:var(--f-mono);background:var(--accent);color:var(--accent-ink);border-radius:5px;padding:0 6px;margin-left:4px}
+.sheet .x{flex:none;border:0;background:var(--surface);border-radius:99px;width:40px;height:40px;font-size:20px}
+.sh-body{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:12px 16px 18px}
+.sh-body>:first-child{margin-top:0}
+.sh-foot{flex:none;border-top:1px solid var(--line);background:var(--surface);padding:8px 10px calc(8px + env(safe-area-inset-bottom,0px))}
+.sh-foot .row{margin:0}
+.abar{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.abtn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:58px;border-radius:12px;border:0;background:none;font-size:12.5px;font-weight:600;color:var(--ink);padding:4px 2px;text-align:center;line-height:1.15}
+.abtn svg{flex:none}
+.abtn.pri{background:var(--accent);color:var(--accent-ink)}
+.abtn[aria-expanded="true"]{background:var(--cell)}
+.abtn:disabled{color:var(--hold);cursor:not-allowed}
+.more{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.more .btn{min-height:48px}
+@media (min-width:700px){
+  .sheet{top:50%;bottom:auto;left:50%;right:auto;width:min(620px,calc(100% - 48px));max-height:88vh;transform:translate(-50%,-50%);border-radius:16px;margin:0}
+  .sh-head{padding-top:12px}.sh-head .grab{display:none}
+  .sh-foot{padding-bottom:10px}
+}
 
 /* tab bar */
 nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:10;background:var(--surface);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -190,8 +212,8 @@ nav.tabs button[aria-current="true"]{color:var(--accent)}
 nav.tabs button.add[aria-current="true"] span.ic,nav.tabs button.add span.ic{background:var(--accent);color:var(--accent-ink);border-radius:99px;width:38px;height:30px;display:grid;place-items:center}
 
 .toast{position:fixed;left:50%;bottom:calc(80px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:30;background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:99px;font-weight:600;max-width:calc(100% - 32px);text-align:center}
-@media (max-width:420px){.form{grid-template-columns:1fr 1fr}.tg{grid-template-columns:repeat(2,1fr)}.fzrow{grid-template-columns:1fr 56px 56px}.fzrow .btn{grid-column:1/-1}}
-@media (prefers-reduced-motion:no-preference){.sheet{animation:up .18s ease-out}@keyframes up{from{transform:translateY(24px);opacity:.6}}}
+@media (max-width:420px){.form{grid-template-columns:1fr 1fr}.tg{grid-template-columns:repeat(2,1fr)}.tg .wide{grid-column:auto}.fzrow{grid-template-columns:1fr 56px 56px}.fzrow .btn{grid-column:1/-1}}
+@media (prefers-reduced-motion:no-preference){.sheet{animation:up .18s ease-out}@keyframes up{from{translate:0 24px;opacity:.6}}}
 </style>
 <style>
 .sub{font-weight:500;text-transform:none;letter-spacing:0;opacity:.8}
@@ -372,7 +394,7 @@ es:{
   reqQ:'Números que te dieron',reqNoteLbl:'Quién lo pide o para qué (opcional)',reqNotePh:'Ej. Supervisora, para inspección',reqAdd:'Agregar',reqEmpty:'No hay pedidos. Cuando te pidan un cart, anótalo aquí.',
   reqNone:'No aparece en la app. Búscalo en el freezer y regístralo en Entrada.',reqDone:'Listo',reqUndo:'Reabrir',reqRemove:x=>'Quitar '+x,reqDoneTitle:n=>'Terminados ('+n+')',reqAsked:a=>'pedido '+a,
   freshTemp:'Temp nueva',needTemp:'Falta temp nueva',matchAs:x=>'Es el '+x,reqAdded:n=>n===1?'Pedido agregado':n+' pedidos agregados',reqClearDone:'Borrar terminados',
-  bkTitle:'Respaldo',bkHint:'Guarda un archivo con todos los datos de este teléfono. Sirve para no perder nada si cambias de teléfono, o para pasar los datos a otro teléfono.',bkSave:'Guardar respaldo',bkLoad:'Cargar respaldo',
+  bkTitle:'Respaldo',moreBtn:'Más',tempShort:'Temp.',heldShort:'Retenido',bkHint:'Guarda un archivo con todos los datos de este teléfono. Sirve para no perder nada si cambias de teléfono, o para pasar los datos a otro teléfono.',bkSave:'Guardar respaldo',bkLoad:'Cargar respaldo',
   bkQ:n=>'Esto cambia los datos de este teléfono por los del respaldo ('+n+' carts). ¿Seguro?',bkYes:'Sí, cargar',bkDone:'Respaldo cargado',bkBad:'Ese archivo no es un respaldo de esta app.',bkSaved:'Respaldo listo',keepTitle:'Espacio y limpieza',keepLbl:'Borrar entregados después de (días)',keepHint:'Los carts que se entregaron hace más de estos días se borran solos de este teléfono, para que la app no se llene. Tu registro permanente es la hoja que mandas y el respaldo: mándalos antes. Déjalo vacío para no borrar nunca.',storeUse:(kb,p)=>'Usando '+kb+' KB, el '+p+'% del espacio de la app.',storeWarn:'El espacio de la app se está llenando. Guarda un respaldo y baja los días de limpieza.',storeFull:'No se pudo guardar: el espacio de la app está lleno. Guarda un respaldo y borra entregados viejos en Ajustes.',
   lotHint:'Sale solo del Date. Si el ticket dice otro, cámbialo.',
   dupCart:(c,w)=>'El cart '+c+' ya aparece dentro: '+w+'. Si ya salió, márcalo antes o revisa el número.',exactCart:'Cart exacto',
@@ -426,7 +448,7 @@ en:{
   reqQ:'Numbers you were given',reqNoteLbl:'Who is asking or what for (optional)',reqNotePh:'e.g. Supervisor, for inspection',reqAdd:'Add',reqEmpty:'No requests. When someone asks for a cart, add it here.',
   reqNone:'Not in the app. Look for it in the freezer and check it in.',reqDone:'Done',reqUndo:'Reopen',reqRemove:x=>'Remove '+x,reqDoneTitle:n=>'Done ('+n+')',reqAsked:a=>'requested '+a,
   freshTemp:'Fresh temp',needTemp:'Needs a fresh temp',matchAs:x=>'Matches '+x,reqAdded:n=>n===1?'Request added':n+' requests added',reqClearDone:'Clear done',
-  bkTitle:'Backup',bkHint:'Save a file with all the data on this phone. Use it so nothing is lost if you change phones, or to move the data to another phone.',bkSave:'Save backup',bkLoad:'Load backup',
+  bkTitle:'Backup',moreBtn:'More',tempShort:'Temp',heldShort:'On hold',bkHint:'Save a file with all the data on this phone. Use it so nothing is lost if you change phones, or to move the data to another phone.',bkSave:'Save backup',bkLoad:'Load backup',
   bkQ:n=>'This replaces the data on this phone with the backup ('+n+' carts). Are you sure?',bkYes:'Yes, load it',bkDone:'Backup loaded',bkBad:'That file is not a backup from this app.',bkSaved:'Backup ready',keepTitle:'Storage and cleanup',keepLbl:'Delete delivered carts after (days)',keepHint:'Carts delivered more than this many days ago are removed from this phone automatically, so the app does not fill up. Your permanent record is the log you send and the backup: send them first. Leave it empty to never delete.',storeUse:(kb,p)=>'Using '+kb+' KB, '+p+'% of the app space.',storeWarn:'The app space is filling up. Save a backup and lower the cleanup days.',storeFull:'Could not save: the app space is full. Save a backup and delete old deliveries in Settings.',
   lotHint:'Filled in from the Date. If the ticket says otherwise, change it.',
   dupCart:(c,w)=>'Cart '+c+' already shows as inside: '+w+'. If it already left, mark it first or check the number.',exactCart:'Exact cart',
@@ -727,7 +749,7 @@ function saveForm(){
 }
 
 /* ---------- cart detail (bottom sheet) ---------- */
-function openCart(id){sheet={id,mode:'view'};renderSheetLayer()}
+function openCart(id){sheet={id,mode:'view',more:false};renderSheetLayer()}
 function closeSheet(){sheet=null;renderSheetLayer()}
 function outWarnText(c){
   const lim=readyLim(); if(isNaN(lim)) return '';
@@ -736,76 +758,95 @@ function outWarnText(c){
   if(val==null||val==='') return '';
   return belowLim(val)?'':t('notReady',cfg.readyTemp,val);
 }
+const ICON={
+  temp:'<path d="M14 14.8V5a2 2 0 1 0-4 0v9.8a4 4 0 1 0 4 0z"/><path d="M12 9v7"/>',
+  out:'<path d="M4 12h13M13 6l6 6-6 6"/>',
+  move:'<path d="M4 8h14M14 4l4 4-4 4M20 16H6M10 12l-4 4 4 4"/>',
+  more:'<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>',
+  undo:'<path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>',
+  note:'<path d="M4 20h4L19 9l-4-4L4 16z"/>',
+  trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
+  lock:'<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>'};
+const ico=k=>`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[k]}</svg>`;
+const abtn=(act,icon,label,cls,extra)=>`<button class="abtn${cls?' '+cls:''}" type="button" ${act?`data-act="${act}"`:''} ${extra||''}>${ico(icon)}<span>${esc(label)}</span></button>`;
+const pair=(a,b)=>`<div class="row">${a}${b}</div>`;
+const bt=(act,label,cls,extra)=>`<button class="btn${cls?' '+cls:''}" type="button" data-act="${act}" ${extra||''}>${esc(label)}</button>`;
 function renderSheetLayer(){
   const L=$('#sheetLayer');
   if(!sheet||!carts[sheet.id]){L.innerHTML='';return}
-  const c=carts[sheet.id], inF=c.status==='in';
-  let h=`<div class="backdrop" data-act="sClose"></div><div class="sheet" role="dialog" aria-modal="true" aria-label="Cart ${esc(c.cart)}"><button class="x" type="button" data-act="sClose" aria-label="${esc(t('close'))}">✕</button><div class="grab"></div>`;
-  h+=`<div class="ticket"><div class="th"><span>RTE ID Ticket</span>${c.demo?`<span class="tag">${esc(t('sample'))}</span>`:''}</div><div class="tg">
-    <div class="big k-code"><label>Product code</label><span>${esc(c.code)}</span></div>
-    <div class="big wide"><label>RTE Cart #</label><span>${esc(c.cart)}</span></div>
-    <div><label>Date</label><span>${esc(fmtDate(c.tdate))||'—'}</span></div>
-    <div class="k-lot"><label>Lot #</label><span>${esc(c.lot)||'—'}</span></div>
-    <div><label>Line</label><span>${esc(c.line)||'—'}</span></div>
-    <div class="wide k-ccp"><label>CCP2 #</label><span>${esc(c.ccp2)||'—'}</span></div>
-    <div><label>From</label><span>${esc(c.from)||'—'}</span></div>
-    <div><label>Packed time <span class="sub">${esc(t('packedHelp'))}</span></label><span>${esc(fmt12(c.packed))||'—'}</span></div>
-    <div><label>${esc(t('lblIn'))}</label><span>${esc(fmtTime(c.inAt))}</span></div></div></div>`;
-  if(inF&&c.hold) h+=`<div class="holdbar" role="alert">${esc(t('holdBanner'))}${c.holdNote?' · '+esc(c.holdNote):''}</div>`;
-  if(isHot(c.temp)) h+=`<p class="hint" style="color:var(--warn);font-weight:600">${esc(t('hotIn',c.temp))}</p>`;
-  if(c.note&&sheet.mode!=='note') h+=`<div class="note"><label>${esc(t('noteTitle'))}</label>${esc(c.note)}</div>`;
-  if(inF) h+=`<div class="where"><span class="fz">${esc(fzName(c.fz))}</span>${c.spot?`<span class="sp">${esc(c.spot)}</span>`:`<span class="hint">${esc(t('noSpot'))}</span>`}</div>`;
-  else h+=`<div class="proof"><label>${esc(t('deliveredTo'))}</label><div class="fz">${esc(c.dest||'—')}</div>
-    <div class="pg"><div><label>${esc(t('hour'))}</label><span>${esc(fmtTime(c.outAt))}</span></div><div><label>Temp</label><span>${c.outTemp?esc(c.outTemp)+'°F':esc(t('notRecorded'))}</span></div><div><label>${esc(t('date'))}</label><span>${esc(fmtDate(dayKey(c.outAt)))}</span></div></div></div>`;
-
+  const c=carts[sheet.id], inF=c.status==='in', m=sheet.mode;
+  if(m!=='view')sheet.more=false;
   const lt=lastT(c);
-  if(inF&&sheet.mode!=='temp') h+=lt?`<div class="lastt${Date.now()-lt.t>3600000?' old':''}"><span class="deg">${esc(lt.temp)}°F</span><span class="when">${esc(t('lastTemp'))}<br><b>${esc(fmtTime(lt.t))} · ${esc(ago(lt.t))}</b></span>${isReady(c)?`<span class="tag ready">${esc(t('ready'))}</span>`:''}</div>`
+  const lastBox=()=>lt?`<div class="lastt${Date.now()-lt.t>3600000?' old':''}"><span class="deg">${esc(lt.temp)}°F</span><span class="when">${esc(t('lastTemp'))}<br><b>${esc(fmtTime(lt.t))} · ${esc(ago(lt.t))}</b></span>${isReady(c)?`<span class="tag ready">${esc(t('ready'))}</span>`:''}</div>`
     :`<div class="lastt"><span class="when">${esc(t('noTempYet'))}</span></div>`;
-  if(sheet.mode==='view'){
-    h+=inF?`<div class="row" style="margin-top:12px"><button class="btn primary" type="button" data-act="sTemp">${esc(t('takeTemp'))}</button></div><div class="row" style="margin-top:10px">${c.hold?`<button class="btn" type="button" disabled>${esc(t('deliverBlocked'))}</button>`:`<button class="btn primary" type="button" data-act="sOut">${esc(t('deliver'))}</button>`}<button class="btn" type="button" data-act="sMove">${esc(t('move'))}</button></div>
-      <div class="row" style="margin-top:10px"><button class="btn" type="button" data-act="sNote">${esc(t(c.note?'editNote':'addNote'))}</button><button class="btn" type="button" data-act="${c.hold?'sUnhold':'sHold'}" style="border-color:var(--hold);color:var(--hold)">${esc(t(c.hold?'unholdBtn':'holdBtn'))}</button></div>`
-          :`<div class="row" style="margin-top:12px"><button class="btn" type="button" data-act="sUndo">${esc(t('undoDel'))}</button><button class="btn" type="button" data-act="sNote">${esc(t(c.note?'editNote':'addNote'))}</button></div>`;
-    h+=`<div class="row" style="margin-top:10px"><button class="btn" type="button" data-act="sEdit">${esc(t('edit'))}</button><button class="btn danger" type="button" data-act="sDel">${esc(t('del'))}</button></div>`;
+  // header: which cart and where it is, always visible
+  let head=`<div class="sh-head"><span class="grab"></span><div class="sh-title"><span class="rack">${esc(c.cart)}</span>`+
+    (inF?`<span class="loc">${esc(fzName(c.fz))}${c.spot?`<b>${esc(c.spot)}</b>`:''}</span>`:`<span class="loc">${esc(t('deliveredTo'))} ${esc(c.dest||'—')}</span>`)+
+    `${inF&&c.hold?` <span class="tag hold">${esc(t('holdTag'))}</span>`:''}</div><button class="x" type="button" data-act="sClose" aria-label="${esc(t('close'))}">✕</button></div>`;
+  let body='', foot='';
+  if(m==='view'){
+    if(inF&&c.hold) body+=`<div class="holdbar" role="alert">${esc(t('holdBanner'))}${c.holdNote?' · '+esc(c.holdNote):''}</div>`;
+    if(inF) body+=lastBox();
+    else body+=`<div class="proof"><label>${esc(t('deliveredTo'))}</label><div class="fz">${esc(c.dest||'—')}</div>
+      <div class="pg"><div><label>${esc(t('hour'))}</label><span>${esc(fmtTime(c.outAt))}</span></div><div><label>Temp</label><span>${c.outTemp?esc(c.outTemp)+'°F':esc(t('notRecorded'))}</span></div><div><label>${esc(t('date'))}</label><span>${esc(fmtDate(dayKey(c.outAt)))}</span></div></div></div>`;
+    if(isHot(c.temp)) body+=`<p class="hint" style="color:var(--warn);font-weight:600">${esc(t('hotIn',c.temp))}</p>`;
+    if(c.note) body+=`<div class="note"><label>${esc(t('noteTitle'))}</label>${esc(c.note)}</div>`;
+    body+=`<div class="ticket" style="margin-top:12px"><div class="th"><span>RTE ID Ticket</span>${c.demo?`<span class="tag">${esc(t('sample'))}</span>`:''}</div><div class="tg">
+      <div class="big k-code"><label>Product code</label><span>${esc(c.code)}</span></div>
+      <div class="big wide"><label>RTE Cart #</label><span>${esc(c.cart)}</span></div>
+      <div><label>Date</label><span>${esc(fmtDate(c.tdate))||'—'}</span></div>
+      <div class="k-lot"><label>Lot #</label><span>${esc(c.lot)||'—'}</span></div>
+      <div><label>Line</label><span>${esc(c.line)||'—'}</span></div>
+      <div class="wide k-ccp"><label>CCP2 #</label><span>${esc(c.ccp2)||'—'}</span></div>
+      <div><label>From</label><span>${esc(c.from)||'—'}</span></div>
+      <div><label>Packed time <span class="sub">${esc(t('packedHelp'))}</span></label><span>${esc(fmt12(c.packed))||'—'}</span></div>
+      <div><label>${esc(t('lblIn'))}</label><span>${esc(fmtTime(c.inAt))}</span></div></div></div>`;
     const log=(c.log||[]).slice().sort((a,b)=>a.t-b.t);
     if(log.length){
-      h+=`<h3>${esc(t('history'))}</h3><ul class="hist">`+log.map(e=>{
+      body+=`<h3>${esc(t('history'))}</h3><ul class="hist">`+log.map(e=>{
         const where=fzName(e.fz)+(e.spot?' · '+e.spot:'');
         const what=e.a==='in'?t('hIn',where):e.a==='move'?t('hMove',where):e.a==='out'?t('hOut',(e.dest||'—')+(e.temp?' · '+e.temp+'°F':'')):e.a==='temp'?t('hTemp',e.temp):e.a==='note'?t('hNote',String(e.note||'').slice(0,60)):e.a==='hold'?t('hHold',e.note||''):e.a==='unhold'?t('hUnhold'):t('hUndo');
         return `<li><span class="num">${esc(fmtTime(e.t))}</span><span>${esc(what)}</span></li>`}).join('')+'</ul>';
     }
-  } else if(sheet.mode==='note'){
-    h+=`<h3>${esc(t('noteTitle'))}</h3><textarea id="sNoteV" class="ta" placeholder="${esc(t('notePh'))}">${esc(sheet.note||'')}</textarea>
-      <div class="row" style="margin-top:14px"><button class="btn" type="button" data-act="sBack">${esc(t('cancel'))}</button><button class="btn primary" type="button" data-act="sNoteOk">${esc(t('saveNote'))}</button></div>`;
-  } else if(sheet.mode==='hold'){
-    h+=`<h3>${esc(t('holdTitle'))}</h3><div class="f"><label for="sHoldV">${esc(t('holdReasonLbl'))}</label><input id="sHoldV" autocomplete="off" placeholder="${esc(t('holdReasonPh'))}" value="${esc(sheet.note||'')}"></div>
-      <div class="row" style="margin-top:14px"><button class="btn" type="button" data-act="sBack">${esc(t('cancel'))}</button><button class="btn primary" type="button" data-act="sHoldOk" style="background:var(--hold);border-color:var(--hold)">${esc(t('holdConfirm'))}</button></div>`;
-  } else if(sheet.mode==='unhold'){
-    h+=`<p class="hint" style="font-weight:600">${esc(t('unholdQ'))}</p>
-      <div class="row"><button class="btn" type="button" data-act="sBack">${esc(t('cancel'))}</button><button class="btn" type="button" data-act="sUnholdOk" style="border-color:var(--hold);color:var(--hold)">${esc(t('unholdYes'))}</button></div>`;
-  } else if(sheet.mode==='temp'){
-    h+=`<h3>${esc(t('takeTemp'))}</h3><div class="form">
+    // action bar, always at the bottom
+    if(inF){
+      if(sheet.more) foot+=`<div class="more">${bt('sNote',t(c.note?'editNote':'addNote'))}${bt(c.hold?'sUnhold':'sHold',t(c.hold?'unholdBtn':'holdBtn'),'','style="border-color:var(--hold);color:var(--hold)"')}${bt('sEdit',t('edit'))}${bt('sDel',t('del'),'danger')}</div>`;
+      foot+=`<div class="abar">${abtn('sTemp','temp',t('tempShort'),'pri')}${c.hold?abtn('','lock',t('heldShort'),'','disabled title="'+esc(t('deliverBlocked'))+'"'):abtn('sOut','out',t('deliver'))}${abtn('sMove','move',t('move'))}${abtn('sMore','more',t('moreBtn'),'','aria-expanded="'+(!!sheet.more)+'"')}</div>`;
+    } else {
+      foot+=`<div class="abar">${abtn('sUndo','undo',t('undoDel'))}${abtn('sNote','note',t(c.note?'editNote':'addNote'))}${abtn('sEdit','note',t('edit'))}${abtn('sDel','trash',t('del'))}</div>`;
+    }
+  } else if(m==='note'){
+    body+=`<h3>${esc(t('noteTitle'))}</h3><textarea id="sNoteV" class="ta" placeholder="${esc(t('notePh'))}">${esc(sheet.note||'')}</textarea>`;
+    foot+=pair(bt('sBack',t('cancel')),bt('sNoteOk',t('saveNote'),'primary'));
+  } else if(m==='hold'){
+    body+=`<h3>${esc(t('holdTitle'))}</h3><div class="f"><label for="sHoldV">${esc(t('holdReasonLbl'))}</label><input id="sHoldV" autocomplete="off" placeholder="${esc(t('holdReasonPh'))}" value="${esc(sheet.note||'')}"></div>`;
+    foot+=pair(bt('sBack',t('cancel')),bt('sHoldOk',t('holdConfirm'),'primary','style="background:var(--hold);border-color:var(--hold)"'));
+  } else if(m==='unhold'){
+    body+=`<p class="hint" style="font-weight:600">${esc(t('unholdQ'))}</p>`;
+    foot+=pair(bt('sBack',t('cancel')),bt('sUnholdOk',t('unholdYes'),'','style="border-color:var(--hold);color:var(--hold)"'));
+  } else if(m==='temp'){
+    body+=`<h3>${esc(t('takeTemp'))}</h3><div class="form">
       <div class="f${sheet.err?' bad':''}"><label for="sTempV">Temp °F</label><input id="sTempV" class="big" inputmode="decimal" autocomplete="off" value="${esc(sheet.temp||'')}">${sheet.err?`<span class="err">${esc(t('errTemp'))}</span>`:''}</div>
       <div class="f"><label for="sTempT">${esc(t('hour'))}</label><input id="sTempT" type="time" value="${esc(sheet.time||'')}"></div></div>`;
     const rs=readings(c).slice(-5).reverse();
-    if(rs.length) h+=`<p class="hint">${esc(t('prev'))} `+rs.map(r=>esc(t('atTime',r.temp,fmtTime(r.t)))).join(' · ')+'</p>';
-    h+=`<div class="row" style="margin-top:14px"><button class="btn" type="button" data-act="sBack">${esc(t('cancel'))}</button><button class="btn primary" type="button" data-act="sTempOk">${esc(t('saveTemp'))}</button></div>`;
-  } else if(sheet.mode==='move'){
-    h+=`<h3>${esc(t('whereMove'))}</h3>`+picker('move',sheet.fz,sheet.spot,c.id);
-    h+=`<div class="row" style="margin-top:14px"><button class="btn" type="button" data-act="sBack">${esc(t('cancel'))}</button><button class="btn primary" type="button" data-act="sMoveOk">${esc(t('moveHere'))}</button></div>`;
-  } else if(sheet.mode==='out'){
+    if(rs.length) body+=`<p class="hint">${esc(t('prev'))} `+rs.map(r=>esc(t('atTime',r.temp,fmtTime(r.t)))).join(' · ')+'</p>';
+    foot+=pair(bt('sBack',t('cancel')),bt('sTempOk',t('saveTemp'),'primary'));
+  } else if(m==='move'){
+    body+=`<h3>${esc(t('whereMove'))}</h3>`+picker('move',sheet.fz,sheet.spot,c.id);
+    foot+=pair(bt('sBack',t('cancel')),bt('sMoveOk',t('moveHere'),'primary'));
+  } else if(m==='out'){
     const w=outWarnText(c);
-    h+=`<h3>${esc(t('whoGets'))}</h3><div class="chips" style="flex-wrap:wrap">`+cfg.dests.map(d=>`<button type="button" class="chip" data-act="sDest" data-v="${esc(d)}" aria-pressed="${sheet.dest===d}">${esc(d)}</button>`).join('')+'</div>';
-    h+=`<div class="form" style="margin-top:12px">
+    body+=lastBox()+`<h3>${esc(t('whoGets'))}</h3><div class="chips" style="flex-wrap:wrap">`+cfg.dests.map(d=>`<button type="button" class="chip" data-act="sDest" data-v="${esc(d)}" aria-pressed="${sheet.dest===d}">${esc(d)}</button>`).join('')+'</div>';
+    body+=`<div class="form" style="margin-top:12px">
       <div class="f${sheet.err?' bad':''}"><label for="sOutTemp">${esc(t('tempDeliver'))}</label><input id="sOutTemp" class="big" inputmode="decimal" autocomplete="off" value="${esc(sheet.temp||'')}">${sheet.err?`<span class="err">${esc(t('errDeliverTemp'))}</span>`:''}</div>
       <div class="f"><label for="sOutTime">${esc(t('deliverTime'))}</label><input id="sOutTime" type="time" value="${esc(sheet.time||'')}"></div></div>`;
-    h+=`<span class="nr" id="nrWarn" role="alert"${w?'':' hidden'}>${esc(w)}</span>`;
-    h+=`<div class="row" style="margin-top:14px"><button class="btn" type="button" data-act="sBack">${esc(t('cancel'))}</button><button class="btn primary" type="button" id="outOkBtn" data-act="sOutOk" ${sheet.dest?'':'disabled'}>${esc(t(w?'confirmAnyway':'confirmDel'))}</button></div>`;
-  } else if(sheet.mode==='del'){
-    h+=`<p class="hint" style="color:var(--warn);font-weight:600">${esc(t('delQ',c.cart))}</p>
-      <div class="row"><button class="btn" type="button" data-act="sBack">${esc(t('keep'))}</button><button class="btn danger" type="button" data-act="sDelOk">${esc(t('yesDel'))}</button></div>`;
+    body+=`<span class="nr" id="nrWarn" role="alert"${w?'':' hidden'}>${esc(w)}</span>`;
+    foot+=pair(bt('sBack',t('cancel')),bt('sOutOk',t(w?'confirmAnyway':'confirmDel'),'primary','id="outOkBtn" '+(sheet.dest?'':'disabled')));
+  } else if(m==='del'){
+    body+=`<p class="hint" style="color:var(--warn);font-weight:600">${esc(t('delQ',c.cart))}</p>`;
+    foot+=pair(bt('sBack',t('keep')),bt('sDelOk',t('yesDel'),'danger'));
   }
-  h+='</div>';
-  L.innerHTML=h;
+  L.innerHTML=`<div class="backdrop" data-act="sClose"></div><div class="sheet" role="dialog" aria-modal="true" aria-label="Cart ${esc(c.cart)}">${head}<div class="sh-body">${body}</div><div class="sh-foot">${foot}</div></div>`;
 }
 function refreshOutWarn(){
   if(!sheet||sheet.mode!=='out'||!carts[sheet.id]) return;
@@ -1085,7 +1126,8 @@ const A={
   save:()=>saveForm(),
   cancelEdit:()=>{const id=editId;editId=null;resetForm(false);setView('inv');if(id)openCart(id)},
   sClose:()=>closeSheet(),
-  sBack:()=>{sheet.mode='view';renderSheetLayer()},
+  sMore:()=>{sheet.more=!sheet.more;renderSheetLayer()},
+  sBack:()=>{sheet.mode='view';sheet.more=false;renderSheetLayer()},
   sMove:()=>{const c=carts[sheet.id];Object.assign(sheet,{mode:'move',fz:c.fz||cfg.freezers[0].id,spot:c.spot||''});renderSheetLayer()},
   sMoveOk:()=>{const c=clone(carts[sheet.id]);c.fz=sheet.fz;c.spot=sheet.spot;(c.log=c.log||[]).push({t:Date.now(),a:'move',fz:c.fz,spot:c.spot});sheet.mode='view';putCart(c);toast(t('movedTo',fzName(c.fz)+(c.spot?' · '+c.spot:'')))},
   sNote:()=>{sheet.mode='note';sheet.note=carts[sheet.id].note||'';renderSheetLayer();const i=$('#sNoteV');if(i)i.focus()},
