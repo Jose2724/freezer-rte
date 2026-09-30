@@ -329,7 +329,7 @@ es:{
   errCode:'Pon el código del producto.',errCart:'Pon el número del cart (RTE Cart #).',missing:'Faltan datos',
   savedIn:(c,f)=>'Cart '+c+' guardado en '+f,changesSaved:'Cambios guardados',
   sheetTitle:'Hoja del turno',sheetHint:'La hoja sale en inglés para la oficina. Tiene lo mismo que la hoja de papel, más dónde está cada cart y cuándo, a quién y a qué temperatura se entregó. Cópiala y pégala en Google Sheets, o descárgala para Excel.',
-  lblDate:'Fecha',lblShift:'Turno',all:'Todos',noRows:'No hay carts registrados en esta fecha.',copyBtn:'Copiar para Google Sheets',csvBtn:'Descargar para Excel',
+  lblDate:'Fecha',lblShift:'Turno',all:'Todos',noRows:'No hay carts registrados en esta fecha.',copyBtn:'Copiar para Google Sheets',csvBtn:'CSV',xlsxBtn:'Excel',pdfBtn:'PDF',expTitle:'Guardar o enviar la hoja',expHint:'Excel y PDF salen como tabla. Con señal la puedes mandar por email, WhatsApp o Teams. Sin señal, escoge "Guardar en Archivos" y la mandas después. CSV es una tabla simple que abre en Excel o Google Sheets.',prepping:'Preparando el archivo…',tapAgain:'Listo. Toca el botón otra vez.',libFail:'Para Excel o PDF la primera vez hace falta señal. Prueba con CSV o "Copiar".',
   pasteHint:'En Google Sheets toca una celda vacía y pega. Cada dato cae en su columna.',copyFail:'Tu teléfono no dejó copiar solo. Mantén el dedo en el cuadro, toca "Seleccionar todo" y "Copiar".',
   copied:'Copiado. Ahora pégalo en Google Sheets',fileReady:'Archivo listo',waitRetry:'Espera un momento y vuelve a intentar',dlFail:'No se pudo descargar aquí. Usa "Copiar".',
   emptyTitle:'Todavía no hay carts',emptyText:'Cada vez que entre un cart al freezer, toca <b>Entrada</b>, copia los datos del ticket y escoge dónde lo pusiste. Aquí vas a ver qué hay en cada freezer y en qué posición.',
@@ -383,7 +383,7 @@ en:{
   errCode:'Enter the product code.',errCart:'Enter the cart number (RTE Cart #).',missing:'Some information is missing',
   savedIn:(c,f)=>'Cart '+c+' saved in '+f,changesSaved:'Changes saved',
   sheetTitle:'Shift log',sheetHint:'This log has everything from the paper sheet, plus where each cart is and when, to whom and at what temperature it was delivered. Copy it into Google Sheets or download it for Excel.',
-  lblDate:'Date',lblShift:'Shift',all:'All',noRows:'No carts were checked in on this date.',copyBtn:'Copy for Google Sheets',csvBtn:'Download for Excel',
+  lblDate:'Date',lblShift:'Shift',all:'All',noRows:'No carts were checked in on this date.',copyBtn:'Copy for Google Sheets',csvBtn:'CSV',xlsxBtn:'Excel',pdfBtn:'PDF',expTitle:'Save or send the log',expHint:'Excel and PDF come out as a table. With signal you can send them by email, WhatsApp or Teams. With no signal, choose "Save to Files" and send it later. CSV is a plain table that opens in Excel or Google Sheets.',prepping:'Getting the file ready…',tapAgain:'Ready. Tap the button again.',libFail:'Excel and PDF need signal the first time. Try CSV or "Copy".',
   pasteHint:'In Google Sheets, tap an empty cell and paste. Each value lands in its own column.',copyFail:'Your phone blocked automatic copying. Press and hold the box, tap "Select All", then "Copy".',
   copied:'Copied. Now paste it into Google Sheets',fileReady:'File ready',waitRetry:'Wait a moment and try again',dlFail:'Download is not available here. Use "Copy".',
   emptyTitle:'No carts yet',emptyText:'Each time a cart goes into a freezer, tap <b>Check-in</b>, copy the ticket details and pick where you put it. This screen shows what is in each freezer and exactly where.',
@@ -806,6 +806,7 @@ function sheetRows(){
   return Object.values(carts).filter(c=>workDay(c.inAt)===d&&(!s||c.shift===s)).sort((a,b)=>a.inAt-b.inAt);
 }
 function renderSheet(){
+  if(canSave()){loadLib('xlsx').catch(()=>{});loadLib('pdf').catch(()=>{})}
   if(!sDateTouched||!$('#sDate').value) $('#sDate').value=workDay(Date.now());
   const d=$('#sDate').value, cur=$('#sShift').value;
   const shifts=[...new Set(Object.values(carts).filter(c=>workDay(c.inAt)===d).map(c=>c.shift).filter(Boolean))];
@@ -816,8 +817,10 @@ function renderSheet(){
   else{
     h+='<div class="tablewrap"><table lang="en"><thead><tr>'+COLS.map(c=>`<th>${esc(c[0])}</th>`).join('')+'</tr></thead><tbody>'+
       rows.map((r,i)=>'<tr>'+COLS.map(c=>{const v=c[1](r,i,d);return `<td${c[0]==='First Temp (°F)'&&isHot(v)?' class="hot"':''}>${esc(v)}</td>`}).join('')+'</tr>').join('')+'</tbody></table></div>';
-    h+=`<div class="row" style="margin-top:14px"><button class="btn primary" type="button" data-act="copy">${esc(t('copyBtn'))}</button>${canSave()?`<button class="btn" type="button" data-act="csv">${esc(t('csvBtn'))}</button>`:''}</div>
+    h+=`<div class="row" style="margin-top:14px"><button class="btn primary" type="button" data-act="copy">${esc(t('copyBtn'))}</button></div>
       <p class="hint">${esc(t('pasteHint'))}</p><div id="copyWrap"></div>`;
+    if(canSave()) h+=`<h3>${esc(t('expTitle'))}</h3><div class="row"><button class="btn" type="button" data-act="exp" data-f="xlsx">${esc(t('xlsxBtn'))}</button><button class="btn" type="button" data-act="exp" data-f="pdf">${esc(t('pdfBtn'))}</button><button class="btn" type="button" data-act="exp" data-f="csv">${esc(t('csvBtn'))}</button></div>
+      <p class="hint">${esc(t('expHint'))}</p>`;
   }
   $('#sheetBody').innerHTML=h;
 }
@@ -843,6 +846,68 @@ async function saveFile(name,text,mime){
     catch(e){toast(t('dlFail'));return false}
   }
   toast(t('dlFail'));return false;
+}
+const LIBS={xlsx:['https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'],
+  pdf:['https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js','https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js']};
+const libP={};
+function loadScript(src){return new Promise((res,rej)=>{const el=document.createElement('script');el.src=src;el.onload=res;el.onerror=rej;document.head.appendChild(el)})}
+function loadLib(k){return libP[k]||(libP[k]=LIBS[k].reduce((p,src)=>p.then(()=>loadScript(src)),Promise.resolve()).catch(e=>{delete libP[k];throw e}))}
+const libReady=k=>k==='xlsx'?!!window.XLSX:!!(window.jspdf&&window.jspdf.jsPDF&&window.jspdf.jsPDF.API&&window.jspdf.jsPDF.API.autoTable);
+const fileBase=()=>'RTE-freezer-log-'+($('#sDate').value||workDay(Date.now()));
+function csvBlob(){
+  const csv='﻿'+tableData().map(r=>r.map(v=>{v=String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}).join(',')).join('\r\n');
+  return new Blob([csv],{type:'text/csv;charset=utf-8'});
+}
+function xlsxBlob(){
+  const data=tableData(), head=data[0];
+  const numIdx=head.map((h,i)=>/Temp \(°F\)$/.test(h)||h==='#'?i:-1).filter(i=>i>=0);
+  const aoa=data.map((r,ri)=>ri===0?r:r.map((v,i)=>numIdx.includes(i)&&v!==''&&!isNaN(Number(v))?Number(v):v));
+  const ws=XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols']=head.map((h,i)=>({wch:Math.max(6,Math.min(30,Math.max(h.length,...aoa.slice(1).map(r=>String(r[i]).length))+2))}));
+  ws['!autofilter']={ref:ws['!ref']};
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'RTE Log');
+  return new Blob([XLSX.write(wb,{bookType:'xlsx',type:'array'})],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+}
+function pdfBlob(){
+  const {jsPDF}=window.jspdf, doc=new jsPDF({orientation:'landscape',unit:'pt',format:'letter'});
+  const d=$('#sDate').value||workDay(Date.now()), shift=$('#sShift').value, rows=sheetRows();
+  const cols=COLS.filter(c=>c[0]!=='Logged At');
+  const hotIdx=cols.findIndex(c=>c[0]==='First Temp (°F)');
+  doc.setFont('helvetica','bold');doc.setFontSize(15);doc.text('RTE Freezer Log',24,32);
+  doc.setFont('helvetica','normal');doc.setFontSize(9);
+  doc.text('Date: '+fmtDate(d)+'     Shift: '+(shift||'All')+'     Carts: '+rows.length+'     Generated: '+new Date().toLocaleString('en-US',{month:'2-digit',day:'2-digit',year:'2-digit',hour:'numeric',minute:'2-digit'}),24,48);
+  doc.autoTable({head:[cols.map(c=>c[0])],body:rows.map((r,i)=>cols.map(c=>String(c[1](r,i,d)))),startY:58,margin:{left:24,right:24,bottom:30},
+    styles:{font:'helvetica',fontSize:6.5,cellPadding:2.5,overflow:'linebreak',lineColor:[200,208,216],lineWidth:0.4,textColor:[19,32,43]},
+    headStyles:{fillColor:[31,95,191],textColor:255,fontStyle:'bold',valign:'middle'},alternateRowStyles:{fillColor:[243,246,249]},
+    didParseCell:h=>{if(h.section==='body'&&h.column.index===hotIdx&&isHot(h.cell.raw))h.cell.styles.textColor=[179,38,30]}});
+  const n=doc.getNumberOfPages();
+  for(let i=1;i<=n;i++){doc.setPage(i);doc.setFontSize(8);doc.setTextColor(90,103,117);doc.text('Page '+i+' of '+n,doc.internal.pageSize.getWidth()-24,doc.internal.pageSize.getHeight()-14,{align:'right'})}
+  return doc.output('blob');
+}
+async function deliverFile(name,blob){
+  if(standalone&&navigator.canShare){
+    const file=new File([blob],name,{type:blob.type});
+    if(navigator.canShare({files:[file]})){
+      try{await navigator.share({files:[file],title:name});return true}
+      catch(e){if(e&&e.name==='AbortError')return false}
+    }
+  }
+  return saveFile(name,blob,blob.type);
+}
+let exporting=false;
+async function doExport(f){
+  if(exporting||!canSave())return;
+  if(f!=='csv'&&!libReady(f)){
+    toast(t('prepping'));
+    try{await loadLib(f)}catch(e){toast(t('libFail'));return}
+    if(standalone){toast(t('tapAgain'));return}
+  }
+  exporting=true;
+  try{
+    const blob=f==='csv'?csvBlob():f==='xlsx'?xlsxBlob():pdfBlob();
+    if(await deliverFile(fileBase()+'.'+f,blob)) toast(t('fileReady'));
+  }catch(e){toast(t('dlFail'))}
+  finally{exporting=false}
 }
 async function doCsv(){
   if(!canSave()) return;
@@ -1017,7 +1082,7 @@ const A={
     sheet.mode='view';putCart(c);toast(t('tempSaved',c.cart,temp))},
   sDel:()=>{sheet.mode='del';renderSheetLayer()},
   sDelOk:()=>{const id=sheet.id;closeSheet();removeCart(id);toast(t('deleted'))},
-  copy:()=>doCopy(), csv:()=>doCsv(),
+  copy:()=>doCopy(), csv:()=>doCsv(), exp:b=>doExport(b.dataset.f),
   bkSave:async()=>{const data=JSON.stringify({app:'freezer-rte',v:1,exportedAt:new Date().toISOString(),carts,cfg,picks});
     if(await saveFile('freezer-rte-backup-'+todayKey()+'.json',data,'application/json')) toast(t('bkSaved'))},
   bkCancel:()=>{bkPending=null;renderCfg()},
