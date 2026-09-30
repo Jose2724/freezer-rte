@@ -286,7 +286,7 @@ header.top .sync{margin-left:auto}
       <div class="f"><label for="fCcp">CCP2 #</label><input id="fCcp" autocomplete="off" placeholder="31-32-33-34"></div>
       <div class="f"><label for="fDate">Date</label><input id="fDate" type="date"></div>
       <div class="f full"><label>From</label><div class="chips" id="fromChips"></div></div>
-      <div class="f"><label for="fPacked">Packed time <span class="sub" data-t="packedHelp"></span></label><input id="fPacked" type="time"></div>
+      <div class="f" hidden><label for="fPacked">Packed time <span class="sub" data-t="packedHelp"></span></label><input id="fPacked" type="time"></div>
     </div>
     <div class="part"><span class="pn">2</span><div><b data-t="part2"></b><small data-t="part2s"></small></div></div>
     <div class="form">
@@ -803,7 +803,7 @@ function renderSheetLayer(){
       <div><label>Line</label><span>${esc(c.line)||'—'}</span></div>
       <div class="wide k-ccp"><label>CCP2 #</label><span>${esc(c.ccp2)||'—'}</span></div>
       <div><label>From</label><span>${esc(c.from)||'—'}</span></div>
-      <div><label>Packed time <span class="sub">${esc(t('packedHelp'))}</span></label><span>${esc(fmt12(c.packed))||'—'}</span></div>
+      ${c.packed?`<div><label>Packed time <span class="sub">${esc(t('packedHelp'))}</span></label><span>${esc(fmt12(c.packed))}</span></div>`:''}
       <div><label>${esc(t('lblIn'))}</label><span>${esc(fmtTime(c.inAt))}</span></div></div></div>`;
     const log=(c.log||[]).slice().sort((a,b)=>a.t-b.t);
     if(log.length){
@@ -862,7 +862,7 @@ function refreshOutWarn(){
 /* ---------- log (always in English) ---------- */
 function firstT(c){const r=readings(c);return r.length?r[0]:null}
 const COLS=[
-  ['#',(c,i)=>i+1],['Product Code',c=>c.code],['Lot #',c=>c.lot],['RTE Cart #',c=>c.cart],['CCP2 #',c=>c.ccp2],['Line',c=>c.line],['From',c=>c.from],['Packed Time',c=>fmt12(c.packed)],
+  ['#',(c,i)=>i+1],['Product Code',c=>c.code],['Lot #',c=>c.lot],['RTE Cart #',c=>c.cart],['CCP2 #',c=>c.ccp2],['Line',c=>c.line],['From',c=>c.from],
   ['Freezer',c=>fzName(c.fz,true)],['Location',c=>c.spot],['Logged At',(c,i,d)=>sheetTime(c.inAt,d)],
   ['First Temp (°F)',c=>{const f=firstT(c);return f?f.temp:''}],['First Temp Time',(c,i,d)=>{const f=firstT(c);return f?sheetTime(f.t,d):''}],
   ['Latest Temp (°F)',c=>{const r=readings(c);return r.length>1?r[r.length-1].temp:''}],['Latest Temp Time',(c,i,d)=>{const r=readings(c);return r.length>1?sheetTime(r[r.length-1].t,d):''}],
@@ -1087,7 +1087,7 @@ function loadDemo(){
     ['1418',L,'9-10','25','47.3',at(15,57),'Kitchen','2','15:20',fz[2]||fz[0],'A3'],
     ['1101',L,'23-24','22','54.2',at(16,0),'Kitchen','3','15:30',fz[2]||fz[0],'B7']];
   rows.forEach((r,i)=>{
-    const c={id:'demo'+i,demo:true,status:'in',shift:cfg.shift,code:r[0],lot:r[1],cart:r[2],ccp2:r[3],temp:r[4],inAt:r[5],from:r[6],line:r[7],packed:r[8],tdate:td,fz:r[9],spot:r[10],log:[{t:r[5],a:'in',fz:r[9],spot:r[10]}]};
+    const c={id:'demo'+i,demo:true,status:'in',shift:cfg.shift,code:r[0],lot:r[1],cart:r[2],ccp2:r[3],temp:r[4],inAt:r[5],from:r[6],line:r[7],packed:'',tdate:td,fz:r[9],spot:r[10],log:[{t:r[5],a:'in',fz:r[9],spot:r[10]}]};
     if(i===1){c.status='out';c.outAt=at(16,30);c.dest=d1();c.outTemp='28.1';c.log.push({t:c.outAt,a:'out',dest:c.dest,temp:c.outTemp})}
     if(i===0||i===2){c.temps=[{t:at(16,40),temp:i?'14.2':'38.6'}];c.log.push({t:at(16,40),a:'temp',temp:c.temps[0].temp})}
     if(i===4){c.temps=[{t:at(17,50),temp:'18.5'}];c.log.push({t:at(17,50),a:'temp',temp:'18.5'})}
