@@ -89,6 +89,8 @@ p.hint{color:var(--muted);font-size:14px;margin:6px 0 12px;max-width:62ch}
 .item .rack{font-family:var(--f-mono);font-weight:600;font-size:20px;background:var(--ticket);color:var(--ticket-ink);border-radius:6px;padding:6px 8px;min-width:78px;text-align:center}
 .item .meta{min-width:0}
 .item .meta b{font-weight:600}
+.item .meta small.cc{color:var(--ink);font-size:14px;margin-top:2px;overflow-wrap:anywhere}
+.item .meta small.cc b{font-weight:600}
 .item .meta small{display:block;color:var(--muted);font-size:13px}
 .item .loc{text-align:right;font-size:13px;color:var(--muted);line-height:1.25}
 .item .loc b{display:block;font-family:var(--f-mono);font-size:18px;color:var(--ink)}
@@ -605,6 +607,7 @@ function itemHTML(c){
   return `<button type="button" class="item${out?' out':''}" data-act="open" data-id="${esc(c.id)}">
     <span class="rack">${esc(c.cart||'?')}</span>
     <span class="meta"><b>COD ${esc(c.code)}</b> · ${esc(t('lot'))} ${esc(c.lot||'—')} ${c.demo?`<span class="tag">${esc(t('sample'))}</span>`:''}${isHot(c.temp)?' <span class="tag hot">≥80°F</span>':''}${!out&&c.hold?` <span class="tag hold">${esc(t('holdTag'))}</span>`:''}${!out&&isReady(c)?` <span class="tag ready">${esc(t('ready'))}</span>`:''}
+      <small class="cc">CCP2 # <b class="mono">${esc(c.ccp2||'—')}</b></small>
       <small>${l?esc(t('tempAgo',l.temp,ago(l.t))):esc(t('noTemp'))} · ${esc(c.packed?t('packedAt',fmt12(c.packed)):t('inAt',fmtTime(c.inAt)))}</small>${c.note?`<small class="nt">${esc(t('notePrefix'))} ${esc(c.note)}</small>`:''}</span>
     <span class="loc">${loc}</span></button>`;
 }
@@ -972,7 +975,7 @@ function reqHTML(x){
     const l=lastT(c), fresh=!!l&&l.t>=x.at, inF=c.status==='in';
     const where=inF?`<b>${esc(fzName(c.fz))}${c.spot?' · '+esc(c.spot):''}</b>`:esc(t('deliveredTo')+' '+(c.dest||'—'));
     return `<button type="button" class="match" data-act="open" data-id="${esc(c.id)}">
-      <span>${f?`<span class="mf">${esc(t('matchAs',f))}</span><br>`:''}RTE Cart # <b class="mono">${esc(c.cart)}</b> · COD ${esc(c.code)} · ${esc(t('lot'))} ${esc(c.lot||'—')}${inF&&c.hold?` <span class="tag hold">${esc(t('holdTag'))}</span>`:''}${inF&&isReady(c)?` <span class="tag ready">${esc(t('ready'))}</span>`:''}<br>${where}</span>
+      <span>${f?`<span class="mf">${esc(t('matchAs',f))}</span><br>`:''}RTE Cart # <b class="mono">${esc(c.cart)}</b> · COD ${esc(c.code)} · ${esc(t('lot'))} ${esc(c.lot||'—')} · CCP2 # ${esc(c.ccp2||'—')}${inF&&c.hold?` <span class="tag hold">${esc(t('holdTag'))}</span>`:''}${inF&&isReady(c)?` <span class="tag ready">${esc(t('ready'))}</span>`:''}<br>${where}</span>
       <span class="mt">${l?`<b class="mono">${esc(l.temp)}°F</b><br><small>${esc(ago(l.t))}</small>`:`<small>${esc(t('noTemp'))}</small>`}${inF?`<br><span class="tag ${fresh?'ready':'warnt'}">${esc(t(fresh?'freshTemp':'needTemp'))}</span>`:''}</span></button>`}).join('');
   return h+'</div>';
 }
