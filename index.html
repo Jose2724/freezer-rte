@@ -275,7 +275,8 @@ header.top .sync{margin-left:auto}
     <p class="hint" data-t="reqHint"></p>
     <div class="form">
       <div class="f full"><label for="rq" data-t="reqQ"></label><div class="inline"><input id="rq" class="big" autocomplete="off" placeholder="19-20, 1234"><button class="btn primary" type="button" data-act="reqAdd" data-t="reqAdd"></button></div></div>
-      <div class="f full"><label for="rqNote" data-t="reqNoteLbl"></label><input id="rqNote" autocomplete="off" data-tp="reqNotePh"></div>
+      <div class="f"><label for="rqCode" data-t="reqCodeLbl"></label><input id="rqCode" inputmode="numeric" autocomplete="off" placeholder="1234"></div>
+      <div class="f"><label for="rqNote" data-t="reqNoteLbl"></label><input id="rqNote" autocomplete="off" data-tp="reqNotePh"></div>
     </div>
     <div id="reqBody" class="reqlist"></div>
   </section>
@@ -362,7 +363,7 @@ es:{
   holdTag:'retenido',holdBanner:'RETENIDO: no se entrega a nadie hasta nueva orden',holdBtn:'Retener (no entregar)',unholdBtn:'Quitar retención',holdTitle:'Retener este cart',holdReasonLbl:'Motivo (opcional)',holdReasonPh:'Ej. Inspector',holdConfirm:'Retener',
   unholdQ:'¿Quitar la retención? Hazlo solo cuando te den la orden.',unholdYes:'Sí, quitar',held:c=>'Cart '+c+' retenido',released:c=>'Retención quitada del cart '+c,hHold:x=>'Retenido'+(x?': '+x:''),hUnhold:'Retención quitada',
   deliverBlocked:'Retenido: no se puede entregar',heldChip:'Retenidos',
-  tabReq:'Pedidos',reqTitle:'Pedidos',reqHint:'Cuando te pidan carts, escribe aquí los números tal como te los den. Pueden ser varios, separados por coma. La app te dice si cada número es un RTE Cart #, un Product code, un Lot # o un CCP2 #, dónde está el cart y si ya le mediste la temperatura después del pedido.',
+  tabReq:'Pedidos',reqTitle:'Pedidos',reqHint:'Cuando te pidan carts, escribe aquí los números tal como te los den. Pueden ser varios, separados por coma. Para un rango escribe 12-17 o 12 al 17 (del 12 hasta el 17). Si te dicen de qué producto, ponlo en Product code. La app te dice si cada número es un RTE Cart #, un Product code, un Lot # o un CCP2 #, dónde está el cart, cuáles faltan y si ya le mediste la temperatura después del pedido.',reqCodeLbl:'Solo de este Product code (opcional)',reqRange:(a,b)=>'Carts del '+a+' al '+b,reqMissing:l=>'No encontré en el freezer: '+l,reqAllFound:r=>'Están todos en el freezer ('+r+')',codeOnly:c=>'solo COD '+c,
   reqQ:'Números que te dieron',reqNoteLbl:'Quién lo pide o para qué (opcional)',reqNotePh:'Ej. Supervisora, para inspección',reqAdd:'Agregar',reqEmpty:'No hay pedidos. Cuando te pidan un cart, anótalo aquí.',
   reqNone:'No aparece en la app. Búscalo en el freezer y regístralo en Entrada.',reqDone:'Listo',reqUndo:'Reabrir',reqRemove:x=>'Quitar '+x,reqDoneTitle:n=>'Terminados ('+n+')',reqAsked:a=>'pedido '+a,
   freshTemp:'Temp nueva',needTemp:'Falta temp nueva',matchAs:x=>'Es el '+x,reqAdded:n=>n===1?'Pedido agregado':n+' pedidos agregados',reqClearDone:'Borrar terminados',
@@ -416,7 +417,7 @@ en:{
   holdTag:'on hold',holdBanner:'ON HOLD: do not release to anyone until further notice',holdBtn:'Put on hold',unholdBtn:'Release hold',holdTitle:'Put this cart on hold',holdReasonLbl:'Reason (optional)',holdReasonPh:'e.g. Inspector',holdConfirm:'Put on hold',
   unholdQ:'Release the hold? Only do this when you are told to.',unholdYes:'Yes, release',held:c=>'Cart '+c+' is on hold',released:c=>'Hold released on cart '+c,hHold:x=>'Put on hold'+(x?': '+x:''),hUnhold:'Hold released',
   deliverBlocked:'On hold: cannot be delivered',heldChip:'On hold',
-  tabReq:'Requests',reqTitle:'Requests',reqHint:'When someone asks for carts, type the numbers here exactly as they give them. You can add several at once, separated by commas. The app tells you whether each number is an RTE Cart #, a Product code, a Lot # or a CCP2 #, where the cart is, and whether you have taken its temperature since the request.',
+  tabReq:'Requests',reqTitle:'Requests',reqHint:'When someone asks for carts, type the numbers here exactly as they give them. You can add several at once, separated by commas. For a range, type 12-17 or 12 to 17 (12 through 17). If they name the product, put it in Product code. The app tells you whether each number is an RTE Cart #, a Product code, a Lot # or a CCP2 #, where the cart is, which ones are missing, and whether you have taken its temperature since the request.',reqCodeLbl:'Only this Product code (optional)',reqRange:(a,b)=>'Carts '+a+' to '+b,reqMissing:l=>'Not found in the freezer: '+l,reqAllFound:r=>'All in the freezer ('+r+')',codeOnly:c=>'COD '+c+' only',
   reqQ:'Numbers you were given',reqNoteLbl:'Who is asking or what for (optional)',reqNotePh:'e.g. Supervisor, for inspection',reqAdd:'Add',reqEmpty:'No requests. When someone asks for a cart, add it here.',
   reqNone:'Not in the app. Look for it in the freezer and check it in.',reqDone:'Done',reqUndo:'Reopen',reqRemove:x=>'Remove '+x,reqDoneTitle:n=>'Done ('+n+')',reqAsked:a=>'requested '+a,
   freshTemp:'Fresh temp',needTemp:'Needs a fresh temp',matchAs:x=>'Matches '+x,reqAdded:n=>n===1?'Request added':n+' requests added',reqClearDone:'Clear done',
@@ -939,23 +940,39 @@ function matchField(c,Q){
   if(cartTokens(c.ccp2).includes(Q)||String(c.ccp2||'').toLowerCase()===Q) return 'CCP2 #';
   return '';
 }
-function reqMatches(q){
-  const Q=q.toLowerCase(), all=Object.values(carts);
-  let m=all.map(c=>({c,f:matchField(c,Q)})).filter(x=>x.f);
-  if(!m.length) m=all.filter(c=>[c.cart,c.code,c.lot].some(v=>String(v||'').toLowerCase().includes(Q))).map(c=>({c,f:''}));
-  m.sort((a,b)=>(FIELD_RANK[a.f]??9)-(FIELD_RANK[b.f]??9)||b.c.inAt-a.c.inAt);
-  return m.filter(x=>x.c.status==='in').concat(m.filter(x=>x.c.status!=='in').slice(0,2)).slice(0,8);
+const inRange=(c,r)=>cartTokens(c.cart).some(tk=>/^\d+$/.test(tk)&&+tk>=r[0]&&+tk<=r[1]);
+function reqMatches(x){
+  const code=String(x.code||'').toLowerCase();
+  const all=Object.values(carts).filter(c=>!code||String(c.code||'').toLowerCase()===code);
+  let m;
+  if(x.range) m=all.filter(c=>inRange(c,x.range)).map(c=>({c,f:'RTE Cart #'}));
+  else{
+    const Q=String(x.q).toLowerCase();
+    m=all.map(c=>({c,f:matchField(c,Q)})).filter(y=>y.f);
+    if(!m.length) m=all.filter(c=>[c.cart,c.code,c.lot].some(v=>String(v||'').toLowerCase().includes(Q))).map(c=>({c,f:''}));
+  }
+  m.sort((a,b)=>(FIELD_RANK[a.f]??9)-(FIELD_RANK[b.f]??9)||(x.range?(parseInt(cartTokens(a.c.cart)[0])||0)-(parseInt(cartTokens(b.c.cart)[0])||0):b.c.inAt-a.c.inAt));
+  const lim=x.range?40:8;
+  return m.filter(y=>y.c.status==='in').concat(m.filter(y=>y.c.status!=='in').slice(0,2)).slice(0,lim);
+}
+function rangeMissing(x){
+  const code=String(x.code||'').toLowerCase(), have=new Set();
+  Object.values(carts).forEach(c=>{if(c.status==='in'&&(!code||String(c.code||'').toLowerCase()===code))cartTokens(c.cart).forEach(tk=>{if(/^\d+$/.test(tk))have.add(+tk)})});
+  const miss=[];for(let n=x.range[0];n<=x.range[1];n++)if(!have.has(n))miss.push(n);
+  return miss;
 }
 function reqHTML(x){
-  const list=reqMatches(x.q);
-  let h=`<div class="req${x.done?' done':''}"><div class="rh"><div><div class="q">${esc(x.q)}</div><small class="hint">${x.note?esc(x.note)+' · ':''}${esc(t('reqAsked',ago(x.at)))}</small></div>
+  const list=reqMatches(x);
+  const title=x.range?t('reqRange',x.range[0],x.range[1]):x.q;
+  let h=`<div class="req${x.done?' done':''}"><div class="rh"><div><div class="q">${esc(title)}</div><small class="hint">${x.code?esc(t('codeOnly',x.code))+' · ':''}${x.note?esc(x.note)+' · ':''}${esc(t('reqAsked',ago(x.at)))}</small></div>
     <div class="rb"><button class="btn" type="button" data-act="reqDone" data-id="${esc(x.id)}">${esc(t(x.done?'reqUndo':'reqDone'))}</button><button class="btn" type="button" data-act="reqDel" data-id="${esc(x.id)}" aria-label="${esc(t('reqRemove',x.q))}">✕</button></div></div>`;
-  if(!list.length) h+=`<p class="hint" style="margin:0">${esc(t('reqNone'))}</p>`;
+  if(x.range){const miss=rangeMissing(x);h+=`<p class="hint" style="margin:0;font-weight:600;color:${miss.length?'var(--amber)':'var(--ok)'}">${esc(miss.length?t('reqMissing',miss.join(', ')):t('reqAllFound',x.range[0]+'–'+x.range[1]))}</p>`}
+  else if(!list.length) h+=`<p class="hint" style="margin:0">${esc(t('reqNone'))}</p>`;
   h+=list.map(({c,f})=>{
     const l=lastT(c), fresh=!!l&&l.t>=x.at, inF=c.status==='in';
     const where=inF?`<b>${esc(fzName(c.fz))}${c.spot?' · '+esc(c.spot):''}</b>`:esc(t('deliveredTo')+' '+(c.dest||'—'));
     return `<button type="button" class="match" data-act="open" data-id="${esc(c.id)}">
-      <span>${f?`<span class="mf">${esc(t('matchAs',f))}</span><br>`:''}RTE Cart # <b class="mono">${esc(c.cart)}</b> · COD ${esc(c.code)} · ${esc(t('lot'))} ${esc(c.lot||'—')}${inF&&c.hold?` <span class="tag hold">${esc(t('holdTag'))}</span>`:''}<br>${where}</span>
+      <span>${f?`<span class="mf">${esc(t('matchAs',f))}</span><br>`:''}RTE Cart # <b class="mono">${esc(c.cart)}</b> · COD ${esc(c.code)} · ${esc(t('lot'))} ${esc(c.lot||'—')}${inF&&c.hold?` <span class="tag hold">${esc(t('holdTag'))}</span>`:''}${inF&&isReady(c)?` <span class="tag ready">${esc(t('ready'))}</span>`:''}<br>${where}</span>
       <span class="mt">${l?`<b class="mono">${esc(l.temp)}°F</b><br><small>${esc(ago(l.t))}</small>`:`<small>${esc(t('noTemp'))}</small>`}${inF?`<br><span class="tag ${fresh?'ready':'warnt'}">${esc(t(fresh?'freshTemp':'needTemp'))}</span>`:''}</span></button>`}).join('');
   return h+'</div>';
 }
@@ -1072,11 +1089,20 @@ const A={
   sHoldOk:()=>{const c=clone(carts[sheet.id]);c.hold=true;c.holdNote=(sheet.note||'').trim();c.holdAt=Date.now();(c.log=c.log||[]).push({t:c.holdAt,a:'hold',note:c.holdNote});sheet.mode='view';putCart(c);toast(t('held',c.cart))},
   sUnhold:()=>{sheet.mode='unhold';renderSheetLayer()},
   sUnholdOk:()=>{const c=clone(carts[sheet.id]);c.hold=false;c.holdNote='';(c.log=c.log||[]).push({t:Date.now(),a:'unhold'});sheet.mode='view';putCart(c);toast(t('released',c.cart))},
-  reqAdd:()=>{const qs=$('#rq').value.split(/[,;\s]+/).map(x=>x.trim()).filter(Boolean);if(!qs.length)return;
+  reqAdd:()=>{
+    const raw=$('#rq').value.replace(/\b(?:del|de|desde|el|la|los|las|from|the|n[uú]mero|numbers?)\b/gi,' ').replace(/(\d)\s*(?:al|a|hasta|to|thru|through|–|—)\s*(\d)/gi,'$1-$2').replace(/(\d)\s+-\s+(\d)/g,'$1-$2');
+    const qs=raw.split(/[,;\s]+/).map(x=>x.trim()).filter(Boolean);
+    const code=$('#rqCode').value.trim();
+    if(!qs.length&&code)qs.push(code);
+    if(!qs.length)return;
     const note=$('#rqNote').value.trim(),now=Date.now();
-    picks.items=(picks.items||[]).concat(qs.map((q,k)=>({id:newId()+k,q,note,at:now,done:false})));
+    picks.items=(picks.items||[]).concat(qs.map((q,k)=>{const m=q.match(/^(\d+)-(\d+)$/),it={id:newId()+k,q,note,at:now,done:false};
+      if(q===code)return it;
+      if(code)it.code=code;
+      if(m&&+m[1]<+m[2]&&+m[2]-+m[1]<=60)it.range=[+m[1],+m[2]];
+      return it}));
     while(picks.items.length>150){const i=picks.items.findIndex(x=>x.done);if(i<0)break;picks.items.splice(i,1)}
-    $('#rq').value='';putPicks();toast(t('reqAdded',qs.length))},
+    $('#rq').value='';$('#rqCode').value='';putPicks();toast(t('reqAdded',qs.length))},
   reqDone:b=>{const x=picks.items.find(i=>i.id===b.dataset.id);if(!x)return;x.done=!x.done;putPicks()},
   reqDel:b=>{picks.items=picks.items.filter(i=>i.id!==b.dataset.id);putPicks()},
   reqClear:()=>{picks.items=picks.items.filter(i=>!i.done);putPicks()},
@@ -1140,7 +1166,7 @@ document.addEventListener('input',e=>{
   else if(id==='sNoteV'||id==='sHoldV')sheet.note=e.target.value;
   else if(id==='sOutTime'||id==='sTempT')sheet.time=e.target.value;
 });
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sheet)closeSheet();if(e.key==='Enter'&&(e.target.id==='rq'||e.target.id==='rqNote')){e.preventDefault();A.reqAdd()}if(e.key==='Enter'&&e.target.id&&e.target.id.startsWith('add-')){const b=e.target.parentNode.querySelector('[data-act="addItem"]');if(b)b.click()}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sheet)closeSheet();if(e.key==='Enter'&&(e.target.id==='rq'||e.target.id==='rqNote'||e.target.id==='rqCode')){e.preventDefault();A.reqAdd()}if(e.key==='Enter'&&e.target.id&&e.target.id.startsWith('add-')){const b=e.target.parentNode.querySelector('[data-act="addItem"]');if(b)b.click()}});
 setInterval(()=>{if(view==='req'&&!sheet)renderReq();if(view==='inv'&&!sheet)renderInv();if(view==='new'&&!timeTouched)$('#fTime').value=hhmm(Date.now())},60000);
 $('#q').addEventListener('input',()=>renderInv());
 $('#fTime').addEventListener('input',()=>{timeTouched=true});
