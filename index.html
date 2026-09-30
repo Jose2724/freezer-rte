@@ -313,7 +313,7 @@ header.top .sync{margin-left:auto}
 const $=s=>document.querySelector(s);
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const clone=o=>JSON.parse(JSON.stringify(o));
-const LS={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const LS={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}}};
 const newId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 
 /* ---------- language ---------- */
@@ -367,7 +367,7 @@ es:{
   reqNone:'No aparece en la app. Búscalo en el freezer y regístralo en Entrada.',reqDone:'Listo',reqUndo:'Reabrir',reqRemove:x=>'Quitar '+x,reqDoneTitle:n=>'Terminados ('+n+')',reqAsked:a=>'pedido '+a,
   freshTemp:'Temp nueva',needTemp:'Falta temp nueva',matchAs:x=>'Es el '+x,reqAdded:n=>n===1?'Pedido agregado':n+' pedidos agregados',reqClearDone:'Borrar terminados',
   bkTitle:'Respaldo',bkHint:'Guarda un archivo con todos los datos de este teléfono. Sirve para no perder nada si cambias de teléfono, o para pasar los datos a otro teléfono.',bkSave:'Guardar respaldo',bkLoad:'Cargar respaldo',
-  bkQ:n=>'Esto cambia los datos de este teléfono por los del respaldo ('+n+' carts). ¿Seguro?',bkYes:'Sí, cargar',bkDone:'Respaldo cargado',bkBad:'Ese archivo no es un respaldo de esta app.',bkSaved:'Respaldo listo',
+  bkQ:n=>'Esto cambia los datos de este teléfono por los del respaldo ('+n+' carts). ¿Seguro?',bkYes:'Sí, cargar',bkDone:'Respaldo cargado',bkBad:'Ese archivo no es un respaldo de esta app.',bkSaved:'Respaldo listo',keepTitle:'Espacio y limpieza',keepLbl:'Borrar entregados después de (días)',keepHint:'Los carts que se entregaron hace más de estos días se borran solos de este teléfono, para que la app no se llene. Tu registro permanente es la hoja que mandas y el respaldo: mándalos antes. Déjalo vacío para no borrar nunca.',storeUse:(kb,p)=>'Usando '+kb+' KB, el '+p+'% del espacio de la app.',storeWarn:'El espacio de la app se está llenando. Guarda un respaldo y baja los días de limpieza.',storeFull:'No se pudo guardar: el espacio de la app está lleno. Guarda un respaldo y borra entregados viejos en Ajustes.',
   lotHint:'Sale solo del Date. Si el ticket dice otro, cámbialo.',
   dupCart:(c,w)=>'El cart '+c+' ya aparece dentro: '+w+'. Si ya salió, márcalo antes o revisa el número.',exactCart:'Cart exacto',
   dayTitle:'Día de trabajo',dayLbl:'El día de trabajo empieza a las',dayHint:'Lo que registres antes de esta hora cuenta para el día anterior. Así, si haces overtime hasta la 1 AM, esos carts salen en la hoja del mismo turno y no se parten en dos días.'
@@ -421,7 +421,7 @@ en:{
   reqNone:'Not in the app. Look for it in the freezer and check it in.',reqDone:'Done',reqUndo:'Reopen',reqRemove:x=>'Remove '+x,reqDoneTitle:n=>'Done ('+n+')',reqAsked:a=>'requested '+a,
   freshTemp:'Fresh temp',needTemp:'Needs a fresh temp',matchAs:x=>'Matches '+x,reqAdded:n=>n===1?'Request added':n+' requests added',reqClearDone:'Clear done',
   bkTitle:'Backup',bkHint:'Save a file with all the data on this phone. Use it so nothing is lost if you change phones, or to move the data to another phone.',bkSave:'Save backup',bkLoad:'Load backup',
-  bkQ:n=>'This replaces the data on this phone with the backup ('+n+' carts). Are you sure?',bkYes:'Yes, load it',bkDone:'Backup loaded',bkBad:'That file is not a backup from this app.',bkSaved:'Backup ready',
+  bkQ:n=>'This replaces the data on this phone with the backup ('+n+' carts). Are you sure?',bkYes:'Yes, load it',bkDone:'Backup loaded',bkBad:'That file is not a backup from this app.',bkSaved:'Backup ready',keepTitle:'Storage and cleanup',keepLbl:'Delete delivered carts after (days)',keepHint:'Carts delivered more than this many days ago are removed from this phone automatically, so the app does not fill up. Your permanent record is the log you send and the backup: send them first. Leave it empty to never delete.',storeUse:(kb,p)=>'Using '+kb+' KB, '+p+'% of the app space.',storeWarn:'The app space is filling up. Save a backup and lower the cleanup days.',storeFull:'Could not save: the app space is full. Save a backup and delete old deliveries in Settings.',
   lotHint:'Filled in from the Date. If the ticket says otherwise, change it.',
   dupCart:(c,w)=>'Cart '+c+' already shows as inside: '+w+'. If it already left, mark it first or check the number.',exactCart:'Exact cart',
   dayTitle:'Work day',dayLbl:'The work day starts at',dayHint:'Anything logged before this time counts toward the previous day. If you work overtime until 1 AM, those carts stay on the same shift log instead of splitting across two days.'
@@ -438,14 +438,14 @@ function applyStatic(){
 
 const DEFAULT_CFG={shift:'2do turno',
   freezers:[{id:'blast',name:'Blast Freezer',rows:2,cols:10,aisle:true},{id:'nuevo',name:'Freezer nuevo',rows:4,cols:8,aisle:false},{id:'trailer',name:'Trailer freezer',rows:2,cols:10,aisle:false}],
-  dests:['Packing','Kitchen','Otro departamento'],froms:['Kitchen','Spiral Oven'],readyTemp:'35',dayStart:'06:00'};
+  dests:['Packing','Kitchen','Otro departamento'],froms:['Kitchen','Spiral Oven'],readyTemp:'35',dayStart:'06:00',keepDays:'60'};
 function normCfg(c){
   c=c&&typeof c==='object'?clone(c):{};
   const d=DEFAULT_CFG;
   return {shift:typeof c.shift==='string'?c.shift:d.shift,
     freezers:Array.isArray(c.freezers)&&c.freezers.length?c.freezers.map(f=>({id:String(f.id||newId()),name:String(f.name||'Freezer'),rows:clampN(f.rows,1,26,4),cols:clampN(f.cols,1,30,6),aisle:!!f.aisle})):clone(d.freezers),
     dests:Array.isArray(c.dests)?c.dests.map(String):clone(d.dests),
-    froms:Array.isArray(c.froms)?c.froms.map(String):clone(d.froms),readyTemp:c.readyTemp==null?d.readyTemp:String(c.readyTemp),dayStart:/^\d\d:\d\d$/.test(c.dayStart||'')?c.dayStart:d.dayStart};
+    froms:Array.isArray(c.froms)?c.froms.map(String):clone(d.froms),readyTemp:c.readyTemp==null?d.readyTemp:String(c.readyTemp),dayStart:/^\d\d:\d\d$/.test(c.dayStart||'')?c.dayStart:d.dayStart,keepDays:c.keepDays==null?d.keepDays:String(c.keepDays)};
 }
 function clampN(v,a,b,def){v=parseInt(v,10);return isNaN(v)?def:Math.min(b,Math.max(a,v))}
 
@@ -461,11 +461,13 @@ let form={fz:cfg.freezers[0].id,spot:'',from:cfg.froms[0]||''}, editId=null;
 let sheet=null;
 let dlNS=null, sDateTouched=false, timeTouched=false, bkPending=null;
 
-function saveLocal(){LS.set('mc_carts',carts);LS.set('mc_cfg',cfg);LS.set('mc_pending',pending);LS.set('mc_picks',picks)}
-function putPicks(){pending['picks/main']={op:'set',data:clone(picks)};saveLocal();renderAll();flush()}
-function putCart(c){c.upd=Date.now();carts[c.id]=c;pending['carts/'+c.id]={op:'set',data:clone(c)};saveLocal();renderAll();flush()}
-function removeCart(id){delete carts[id];pending['carts/'+id]={op:'delete'};saveLocal();renderAll();flush()}
-function putCfg(){pending['config/main']={op:'set',data:clone(cfg)};saveLocal();renderAll();flush()}
+function saveLocal(){const ok=LS.set('mc_carts',carts)&LS.set('mc_cfg',cfg)&LS.set('mc_pending',pending)&LS.set('mc_picks',picks);if(!ok&&Date.now()-fullWarned>60000){fullWarned=Date.now();toast(t('storeFull'))}}
+let fullWarned=0;
+function queue(path,op){if(dbState!=='local')pending[path]=op}
+function putPicks(){queue('picks/main',{op:'set',data:clone(picks)});saveLocal();renderAll();flush()}
+function putCart(c){c.upd=Date.now();carts[c.id]=c;queue('carts/'+c.id,{op:'set',data:clone(c)});saveLocal();renderAll();flush()}
+function removeCart(id){delete carts[id];queue('carts/'+id,{op:'delete'});saveLocal();renderAll();flush()}
+function putCfg(){queue('config/main',{op:'set',data:clone(cfg)});saveLocal();renderAll();flush()}
 
 /* ---------- sync ---------- */
 let flushing=false;
@@ -491,12 +493,25 @@ async function flush(){
 setInterval(()=>{if(db&&Object.keys(pending).length) flush()},20000);
 window.addEventListener('online',()=>flush());
 
+function goLocal(){dbState='local';pending={};prune();saveLocal();renderAll()}
+const QUOTA=2500000; // characters; Safari keeps roughly this much per site
+function storeUsed(){try{let n=0;for(const k of ['mc_carts','mc_cfg','mc_pending','mc_picks','mc_last'])n+=(localStorage.getItem(k)||'').length;return n}catch(e){return 0}}
+function prune(){
+  if(dbState!=='local')return 0;
+  const days=parseInt(cfg.keepDays,10); if(!(days>0))return 0;
+  const cut=Date.now()-days*864e5; let n=0;
+  for(const id in carts){const c=carts[id];if(c.status!=='in'&&c.outAt&&c.outAt<cut){delete carts[id];n++}}
+  const before=(picks.items||[]).length; picks.items=(picks.items||[]).filter(x=>!x.done||x.at>=cut);
+  if(n||picks.items.length!==before)saveLocal();
+  return n;
+}
+setInterval(()=>{if(prune())renderAll()},6*3600000);
 function connect(){
   const cl=window.claude;
-  if(!cl||typeof cl.use!=='function'){dbState='local';renderSync();return}
+  if(!cl||typeof cl.use!=='function'){goLocal();return}
   cl.use('downloads').then(ns=>{dlNS=ns;if(view==='sheet')renderSheet()}).catch(()=>{});
   cl.use('db').then(ns=>{
-    if(!ns){dbState='local';renderSync();return}
+    if(!ns){goLocal();return}
     db=ns; dbState='online';
     db.collection('carts').onSnapshot(snap=>{
       const server={}; snap.docs.forEach(d=>{server[d.id]=d.data()});
@@ -981,6 +996,10 @@ function renderCfg(){
   h+=`<h3>${esc(t('demoTitle'))}</h3><div class="box"><p class="hint" style="margin-top:0">${esc(t('demoHint'))}</p><div class="row">
     <button class="btn" type="button" data-act="demo">${esc(t('loadDemo'))}</button><button class="btn danger" type="button" data-act="clearDemo" ${demos?'':'disabled'}>${esc(t('clearDemo',demos))}</button></div></div>`;
   h+=`<h3>${esc(t('storeTitle'))}</h3><p class="hint">${esc(t(dbState==='local'?'storeLocal':'storeCloud'))}</p>`;
+  if(dbState==='local'){const used=storeUsed(),pct=Math.min(100,Math.round(used/QUOTA*100));
+    h+=`<h3>${esc(t('keepTitle'))}</h3><div class="box"><p class="hint" style="margin-top:0${pct>=70?';color:var(--warn);font-weight:600':''}">${esc(t('storeUse',Math.max(1,Math.round(used/1024)),pct))}${pct>=70?' '+esc(t('storeWarn')):''}</p>
+      <div class="f" style="max-width:260px"><label for="cKeep">${esc(t('keepLbl'))}</label><input id="cKeep" data-cfg="keep" inputmode="numeric" value="${esc(cfg.keepDays)}" placeholder="60"></div>
+      <p class="hint" style="margin-bottom:0">${esc(t('keepHint'))}</p></div>`;}
   h+=`<h3>${esc(t('bkTitle'))}</h3><div class="box"><p class="hint" style="margin-top:0">${esc(t('bkHint'))}</p>
     ${bkPending?`<p class="hint" style="font-weight:600;color:var(--warn)">${esc(t('bkQ',Object.keys(bkPending.carts||{}).length))}</p><div class="row"><button class="btn" type="button" data-act="bkCancel">${esc(t('cancel'))}</button><button class="btn danger" type="button" data-act="bkApply">${esc(t('bkYes'))}</button></div>`
     :`<div class="row">${canSave()?`<button class="btn" type="button" data-act="bkSave">${esc(t('bkSave'))}</button>`:''}<label class="btn" for="bkFile">${esc(t('bkLoad'))}</label></div>`}
@@ -1004,7 +1023,7 @@ function loadDemo(){
     if(i===1){c.status='out';c.outAt=at(16,30);c.dest=d1();c.outTemp='28.1';c.log.push({t:c.outAt,a:'out',dest:c.dest,temp:c.outTemp})}
     if(i===0||i===2){c.temps=[{t:at(16,40),temp:i?'14.2':'38.6'}];c.log.push({t:at(16,40),a:'temp',temp:c.temps[0].temp})}
     if(i===4){c.temps=[{t:at(17,50),temp:'18.5'}];c.log.push({t:at(17,50),a:'temp',temp:'18.5'})}
-    carts[c.id]=c; pending['carts/'+c.id]={op:'set',data:clone(c)};
+    carts[c.id]=c; queue('carts/'+c.id,{op:'set',data:clone(c)});
   });
   saveLocal();renderAll();flush();toast(t('demoLoaded'));
 }
@@ -1087,13 +1106,13 @@ const A={
     if(await saveFile('freezer-rte-backup-'+todayKey()+'.json',data,'application/json')) toast(t('bkSaved'))},
   bkCancel:()=>{bkPending=null;renderCfg()},
   bkApply:()=>{const b=bkPending;bkPending=null;if(!b)return;
-    Object.keys(carts).forEach(id=>{if(!b.carts[id])pending['carts/'+id]={op:'delete'}});
-    carts=clone(b.carts);Object.keys(carts).forEach(id=>{pending['carts/'+id]={op:'set',data:clone(carts[id])}});
-    cfg=normCfg(b.cfg);pending['config/main']={op:'set',data:clone(cfg)};
-    picks={items:Array.isArray(b.picks&&b.picks.items)?clone(b.picks.items):[]};pending['picks/main']={op:'set',data:clone(picks)};
+    Object.keys(carts).forEach(id=>{if(!b.carts[id])queue('carts/'+id,{op:'delete'})});
+    carts=clone(b.carts);Object.keys(carts).forEach(id=>{queue('carts/'+id,{op:'set',data:clone(carts[id])})});
+    cfg=normCfg(b.cfg);queue('config/main',{op:'set',data:clone(cfg)});
+    picks={items:Array.isArray(b.picks&&b.picks.items)?clone(b.picks.items):[]};queue('picks/main',{op:'set',data:clone(picks)});
     fixForm();saveLocal();renderAll();flush();toast(t('bkDone'))},
   demo:()=>loadDemo(),
-  clearDemo:()=>{Object.values(carts).filter(c=>c.demo).forEach(c=>{delete carts[c.id];pending['carts/'+c.id]={op:'delete'}});saveLocal();renderAll();flush();toast(t('demoCleared'))},
+  clearDemo:()=>{Object.values(carts).filter(c=>c.demo).forEach(c=>{delete carts[c.id];queue('carts/'+c.id,{op:'delete'})});saveLocal();renderAll();flush();toast(t('demoCleared'))},
   addFz:()=>{cfg.freezers.push({id:newId(),name:'Freezer '+(cfg.freezers.length+1),rows:3,cols:6,aisle:false});putCfg()},
   rmFz:b=>{const f=cfg.freezers[+b.dataset.i];if(!f||cfg.freezers.length<2)return;cfg.freezers.splice(+b.dataset.i,1);fixForm();putCfg()},
   addItem:b=>{const k=b.dataset.k,inp=$('#add-'+k),v=inp.value.trim();if(!v)return;if(!cfg[k].includes(v))cfg[k].push(v);putCfg()},
@@ -1111,6 +1130,7 @@ document.addEventListener('change',e=>{
   else if(k==='fzcols') cfg.freezers[i].cols=clampN(el.value,1,30,cfg.freezers[i].cols);
   else if(k==='fzaisle') cfg.freezers[i].aisle=el.checked;
   else if(k==='ready') cfg.readyTemp=el.value.trim();
+  else if(k==='keep'){const n=parseInt(el.value,10);cfg.keepDays=n>0?String(Math.min(n,3650)):''}
   else if(k==='day'){if(!/^\d\d:\d\d/.test(el.value))return;cfg.dayStart=el.value.slice(0,5)}
   putCfg();
 });
