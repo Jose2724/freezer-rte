@@ -211,6 +211,16 @@ textarea.ta{width:100%;min-height:84px;border-radius:var(--r);border:1.5px solid
 .match .mt{text-align:right;font-size:15px}
 nav.tabs button{position:relative}
 .bdg{position:absolute;top:6px;left:calc(50% + 8px);min-width:20px;height:20px;border-radius:99px;background:var(--warn);color:var(--surface);font-size:12px;font-weight:700;display:grid;place-items:center;padding:0 5px}
+/* iPhone: date/time boxes have a built-in minimum width that spills out of their column */
+.f input[type="date"],.f input[type="time"]{-webkit-appearance:none;appearance:none;display:block;min-width:0;max-width:100%;width:100%;text-align:left}
+.f input::-webkit-date-and-time-value{text-align:left;margin:0}
+.f select{-webkit-appearance:none;appearance:none;min-width:0;max-width:100%;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 18px) 50%,calc(100% - 12px) 50%;background-size:6px 6px;background-repeat:no-repeat;padding-right:32px}
+.inline>input{min-width:0}
+.form>*{min-width:0}
+/* only vertical bounce: the page itself never moves sideways; maps and tables still scroll inside their own box */
+html,body{overflow-x:hidden;overflow-x:clip;max-width:100%;overscroll-behavior-x:none}
+.app{overflow-x:clip}
+.mapwrap,.tablewrap,.chips{overscroll-behavior-x:contain}
 .lang{display:inline-flex;border:1.5px solid var(--line);border-radius:99px;overflow:hidden;flex:none}
 .lang button{border:0;background:var(--surface);min-width:40px;min-height:34px;font-weight:700;font-size:13px;color:var(--muted)}
 .lang button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
