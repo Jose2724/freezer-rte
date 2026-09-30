@@ -163,6 +163,7 @@ p.hint{color:var(--muted);font-size:14px;margin:6px 0 12px;max-width:62ch}
 table{border-collapse:collapse;font-size:14px;min-width:100%}
 th{background:var(--accent);color:var(--accent-ink);font-family:var(--f-display);font-weight:600;font-size:13px;letter-spacing:.04em;text-transform:uppercase;padding:8px 10px;text-align:left;white-space:nowrap}
 td{padding:8px 10px;border-top:1px solid var(--line);white-space:nowrap;font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+th.ext{background:var(--cell);color:var(--muted)}
 td.hot{color:var(--warn);font-weight:600}
 textarea#copyBox{width:100%;height:120px;margin-top:10px;font-family:var(--f-mono);font-size:12px;border-radius:var(--r);border:1px solid var(--line);background:var(--surface);padding:8px}
 
@@ -362,7 +363,7 @@ es:{
   savedIn:(c,f)=>'Cart '+c+' guardado en '+f,changesSaved:'Cambios guardados',
   sheetTitle:'Hoja del turno',sheetHint:'La hoja sale en inglés para la oficina. Tiene lo mismo que la hoja de papel, más dónde está cada cart y cuándo, a quién y a qué temperatura se entregó. Cópiala y pégala en Google Sheets, o descárgala para Excel.',
   lblDate:'Fecha',lblShift:'Turno',all:'Todos',noRows:'No hay carts registrados en esta fecha.',copyBtn:'Copiar para Google Sheets',csvBtn:'CSV',xlsxBtn:'Excel',pdfBtn:'PDF',expTitle:'Guardar o enviar la hoja',expHint:'Excel y PDF salen como tabla. Con señal la puedes mandar por email, WhatsApp o Teams. Sin señal, escoge "Guardar en Archivos" y la mandas después. CSV es una tabla simple que abre en Excel o Google Sheets.',prepping:'Preparando el archivo…',tapAgain:'Listo. Toca el botón otra vez.',libFail:'Para Excel o PDF la primera vez hace falta señal. Prueba con CSV o "Copiar".',
-  pasteHint:'En Google Sheets toca una celda vacía y pega. Cada dato cae en su columna.',copyFail:'Tu teléfono no dejó copiar solo. Mantén el dedo en el cuadro, toca "Seleccionar todo" y "Copiar".',
+  pasteHint:'En Google Sheets toca una celda vacía y pega. Cada dato cae en su columna.',paperCols:'Las columnas en azul son las mismas de la hoja de papel y en el mismo orden. Las grises son extra, para ti.',copyFail:'Tu teléfono no dejó copiar solo. Mantén el dedo en el cuadro, toca "Seleccionar todo" y "Copiar".',
   copied:'Copiado. Ahora pégalo en Google Sheets',fileReady:'Archivo listo',waitRetry:'Espera un momento y vuelve a intentar',dlFail:'No se pudo descargar aquí. Usa "Copiar".',
   emptyTitle:'Todavía no hay carts',emptyText:'Cada vez que entre un cart al freezer, toca <b>Entrada</b>, copia los datos del ticket y escoge dónde lo pusiste. Aquí vas a ver qué hay en cada freezer y en qué posición.',
   firstCart:'Registrar primer cart',seeDemo:'Ver con datos de ejemplo',results:n=>n+' resultado'+(n===1?'':'s'),noHits:'Nada con eso. Prueba con el código del producto, el lote o el número del cart.',
@@ -416,7 +417,7 @@ en:{
   savedIn:(c,f)=>'Cart '+c+' saved in '+f,changesSaved:'Changes saved',
   sheetTitle:'Shift log',sheetHint:'This log has everything from the paper sheet, plus where each cart is and when, to whom and at what temperature it was delivered. Copy it into Google Sheets or download it for Excel.',
   lblDate:'Date',lblShift:'Shift',all:'All',noRows:'No carts were checked in on this date.',copyBtn:'Copy for Google Sheets',csvBtn:'CSV',xlsxBtn:'Excel',pdfBtn:'PDF',expTitle:'Save or send the log',expHint:'Excel and PDF come out as a table. With signal you can send them by email, WhatsApp or Teams. With no signal, choose "Save to Files" and send it later. CSV is a plain table that opens in Excel or Google Sheets.',prepping:'Getting the file ready…',tapAgain:'Ready. Tap the button again.',libFail:'Excel and PDF need signal the first time. Try CSV or "Copy".',
-  pasteHint:'In Google Sheets, tap an empty cell and paste. Each value lands in its own column.',copyFail:'Your phone blocked automatic copying. Press and hold the box, tap "Select All", then "Copy".',
+  pasteHint:'In Google Sheets, tap an empty cell and paste. Each value lands in its own column.',paperCols:'Blue columns match the paper sheet, in the same order. Gray columns are extras.',copyFail:'Your phone blocked automatic copying. Press and hold the box, tap "Select All", then "Copy".',
   copied:'Copied. Now paste it into Google Sheets',fileReady:'File ready',waitRetry:'Wait a moment and try again',dlFail:'Download is not available here. Use "Copy".',
   emptyTitle:'No carts yet',emptyText:'Each time a cart goes into a freezer, tap <b>Check-in</b>, copy the ticket details and pick where you put it. This screen shows what is in each freezer and exactly where.',
   firstCart:'Check in the first cart',seeDemo:'Try it with sample data',results:n=>n+' result'+(n===1?'':'s'),noHits:'No matches. Try the product code, lot or cart number.',
@@ -868,6 +869,9 @@ const COLS=[
   ['Latest Temp (°F)',c=>{const r=readings(c);return r.length>1?r[r.length-1].temp:''}],['Latest Temp Time',(c,i,d)=>{const r=readings(c);return r.length>1?sheetTime(r[r.length-1].t,d):''}],
   ['Status',c=>c.status==='in'?'In Freezer':'Delivered'],['On Hold',c=>c.status==='in'&&c.hold?'Yes':''],['Delivered To',c=>c.status==='in'?'':c.dest],
   ['Delivery Time',(c,i,d)=>c.status==='in'?'':sheetTime(c.outAt,d)],['Delivery Temp (°F)',c=>c.status==='in'?'':(c.outTemp||'')],['Notes',c=>c.note||'']];
+const PAPER=['#','Product Code','Lot #','RTE Cart #','CCP2 #','First Temp (°F)','First Temp Time'];
+const COL_ORDER=PAPER.concat(['Latest Temp (°F)','Latest Temp Time','Line','From','Freezer','Location','Status','On Hold','Delivered To','Delivery Time','Delivery Temp (°F)','Logged At','Notes']);
+COLS.sort((a,b)=>COL_ORDER.indexOf(a[0])-COL_ORDER.indexOf(b[0]));
 function sheetRows(){
   const d=$('#sDate').value||workDay(Date.now()), s=$('#sShift').value;
   return Object.values(carts).filter(c=>workDay(c.inAt)===d&&(!s||c.shift===s)).sort((a,b)=>a.inAt-b.inAt);
@@ -882,7 +886,8 @@ function renderSheet(){
   let h='';
   if(!rows.length) h=`<p class="hint" style="margin-top:14px">${esc(t('noRows'))}</p>`;
   else{
-    h+='<div class="tablewrap"><table lang="en"><thead><tr>'+COLS.map(c=>`<th>${esc(c[0])}</th>`).join('')+'</tr></thead><tbody>'+
+    h+=`<p class="hint" style="margin-bottom:0">${esc(t('paperCols'))}</p>`;
+    h+='<div class="tablewrap"><table lang="en"><thead><tr>'+COLS.map(c=>`<th${PAPER.includes(c[0])?'':' class="ext"'}>${esc(c[0])}</th>`).join('')+'</tr></thead><tbody>'+
       rows.map((r,i)=>'<tr>'+COLS.map(c=>{const v=c[1](r,i,d);return `<td${c[0]==='First Temp (°F)'&&isHot(v)?' class="hot"':''}>${esc(v)}</td>`}).join('')+'</tr>').join('')+'</tbody></table></div>';
     h+=`<div class="row" style="margin-top:14px"><button class="btn primary" type="button" data-act="copy">${esc(t('copyBtn'))}</button></div>
       <p class="hint">${esc(t('pasteHint'))}</p><div id="copyWrap"></div>`;
@@ -946,7 +951,7 @@ function pdfBlob(){
   doc.autoTable({head:[cols.map(c=>c[0])],body:rows.map((r,i)=>cols.map(c=>String(c[1](r,i,d)))),startY:58,margin:{left:24,right:24,bottom:30},
     styles:{font:'helvetica',fontSize:6.5,cellPadding:2.5,overflow:'linebreak',lineColor:[200,208,216],lineWidth:0.4,textColor:[19,32,43]},
     headStyles:{fillColor:[31,95,191],textColor:255,fontStyle:'bold',valign:'middle'},alternateRowStyles:{fillColor:[243,246,249]},
-    didParseCell:h=>{if(h.section==='body'&&h.column.index===hotIdx&&isHot(h.cell.raw))h.cell.styles.textColor=[179,38,30]}});
+    didParseCell:h=>{if(h.section==='head'&&h.column.index>=PAPER.length){h.cell.styles.fillColor=[223,230,237];h.cell.styles.textColor=[70,84,97]}if(h.section==='body'&&h.column.index===hotIdx&&isHot(h.cell.raw))h.cell.styles.textColor=[179,38,30]}});
   const n=doc.getNumberOfPages();
   for(let i=1;i<=n;i++){doc.setPage(i);doc.setFontSize(8);doc.setTextColor(90,103,117);doc.text('Page '+i+' of '+n,doc.internal.pageSize.getWidth()-24,doc.internal.pageSize.getHeight()-14,{align:'right'})}
   return doc.output('blob');
