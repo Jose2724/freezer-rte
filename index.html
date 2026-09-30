@@ -90,6 +90,7 @@ p.hint{color:var(--muted);font-size:14px;margin:6px 0 12px;max-width:62ch}
 .item .meta{min-width:0}
 .item .meta b{font-weight:600}
 .k-code{color:var(--c-code)}.k-lot{color:var(--c-lot)}.k-ccp{color:var(--c-ccp)}
+.item .meta .k-code{display:block}
 .item .meta .k-code,.item .meta .k-lot,.match .k-code,.match .k-lot,.match .k-ccp{white-space:nowrap}
 .item .meta small.cc{color:var(--c-ccp);font-size:14px;margin-top:2px;overflow-wrap:anywhere}
 .item .meta small.cc b{font-weight:600}
@@ -608,7 +609,7 @@ function itemHTML(c){
   const l=lastT(c);
   return `<button type="button" class="item${out?' out':''}" data-act="open" data-id="${esc(c.id)}">
     <span class="rack">${esc(c.cart||'?')}</span>
-    <span class="meta"><b class="k-code">COD ${esc(c.code)}</b> <span class="k-lot" style="margin-left:6px">${esc(t('lot'))} <b>${esc(c.lot||'—')}</b></span> ${c.demo?`<span class="tag">${esc(t('sample'))}</span>`:''}${isHot(c.temp)?' <span class="tag hot">≥80°F</span>':''}${!out&&c.hold?` <span class="tag hold">${esc(t('holdTag'))}</span>`:''}${!out&&isReady(c)?` <span class="tag ready">${esc(t('ready'))}</span>`:''}
+    <span class="meta"><b class="k-code">COD ${esc(c.code)}</b> <span class="k-lot">${esc(t('lot'))} <b>${esc(c.lot||'—')}</b></span> ${c.demo?`<span class="tag">${esc(t('sample'))}</span>`:''}${isHot(c.temp)?' <span class="tag hot">≥80°F</span>':''}${!out&&c.hold?` <span class="tag hold">${esc(t('holdTag'))}</span>`:''}${!out&&isReady(c)?` <span class="tag ready">${esc(t('ready'))}</span>`:''}
       <small class="cc">CCP2 # <b class="mono">${esc(c.ccp2||'—')}</b></small>
       <small>${l?esc(t('tempAgo',l.temp,ago(l.t))):esc(t('noTemp'))} · ${esc(c.packed?t('packedAt',fmt12(c.packed)):t('inAt',fmtTime(c.inAt)))}</small>${c.note?`<small class="nt">${esc(t('notePrefix'))} ${esc(c.note)}</small>`:''}</span>
     <span class="loc">${loc}</span></button>`;
