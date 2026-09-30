@@ -1,0 +1,1076 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1f5fbf">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Freezer RTE">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="robots" content="noindex">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<style>*{box-sizing:border-box}:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,-apple-system,"Segoe UI",sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Freezer RTE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: one-column phone tool, sticky header, fixed bottom tab bar; carts drawn as pale-blue RTE ID tickets. */
+:root{
+  --bg:#e9eef2; --surface:#ffffff; --ink:#13202b; --muted:#566775; --line:#cfd9e1;
+  --accent:#1f5fbf; --accent-ink:#ffffff; --ticket:#cfe4f2; --ticket-ink:#0e2a45; --ticket-line:#0e2a45;
+  --ok:#1b7446; --warn:#b3261e; --amber:#9a5a00; --cell:#f3f6f9; --cell-on:#dbe8fb; --hold:#7b2d9e;
+  --f-display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0c131a; --surface:#15202b; --ink:#e4ecf2; --muted:#8fa1b0; --line:#253441;
+  --accent:#6ea3ff; --accent-ink:#0b1622; --ticket:#1a3348; --ticket-ink:#d9ecfb; --ticket-line:#8fb8da;
+  --ok:#52c48a; --warn:#ff8a80; --amber:#f0b35a; --cell:#1a2733; --cell-on:#21406a; --hold:#c98ae6; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0c131a; --surface:#15202b; --ink:#e4ecf2; --muted:#8fa1b0; --line:#253441;
+  --accent:#6ea3ff; --accent-ink:#0b1622; --ticket:#1a3348; --ticket-ink:#d9ecfb; --ticket-line:#8fb8da;
+  --ok:#52c48a; --warn:#ff8a80; --amber:#f0b35a; --cell:#1a2733; --cell-on:#21406a; --hold:#c98ae6; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.4;-webkit-tap-highlight-color:transparent}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.num,.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.app{max-width:760px;margin:0 auto;padding-inline:16px;padding-block:0 calc(96px + env(safe-area-inset-bottom,0px))}
+
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;align-items:center;gap:12px;padding-block:12px 10px;border-bottom:1px solid var(--line);margin-inline:-16px;padding-inline:16px}
+.brand{font-family:var(--f-display);font-weight:700;font-size:26px;letter-spacing:.02em;line-height:1;text-transform:uppercase}
+.brand small{display:block;font-family:var(--f-body);font-weight:500;font-size:13px;letter-spacing:0;text-transform:none;color:var(--muted);margin-top:3px}
+.sync{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:5px 10px;white-space:nowrap}
+.sync i{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.sync.ok i{background:var(--ok)} .sync.pend{color:var(--amber)} .sync.pend i{background:var(--amber)}
+
+h2{font-family:var(--f-display);font-weight:700;font-size:24px;text-transform:uppercase;letter-spacing:.03em;margin:20px 0 10px;text-wrap:balance}
+h3{font-family:var(--f-display);font-weight:600;font-size:18px;text-transform:uppercase;letter-spacing:.04em;margin:18px 0 8px;color:var(--muted)}
+p.hint{color:var(--muted);font-size:14px;margin:6px 0 12px;max-width:62ch}
+
+/* chips */
+.chips{display:flex;gap:8px;overflow-x:auto;padding-block:4px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 14px;border-radius:99px;border:1.5px solid var(--line);background:var(--surface);font-weight:600;font-size:15px}
+.chip b{font-family:var(--f-mono);font-size:13px;background:var(--cell);border-radius:99px;padding:1px 8px}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.chip[aria-pressed="true"] b{background:rgba(255,255,255,.22);color:inherit}
+
+/* search */
+.search{position:relative;margin-top:14px}
+.search input{width:100%;min-height:52px;border-radius:var(--r);border:1.5px solid var(--line);background:var(--surface);padding:0 14px 0 44px;font-size:17px}
+.search svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted)}
+
+/* freezer map */
+.mapwrap{overflow-x:auto;margin-top:10px;padding-bottom:4px}
+.map{display:grid;gap:6px;min-width:min-content}
+.cell{min-width:64px;min-height:56px;border-radius:8px;border:1.5px dashed var(--line);background:var(--cell);display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;padding:4px 6px;text-align:left}
+.cell .lab{font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+.cell .who{font-family:var(--f-mono);font-weight:600;font-size:13px;line-height:1.2;white-space:nowrap}
+.cell.busy{border-style:solid;border-color:var(--ticket-line);background:var(--ticket);color:var(--ticket-ink)}
+.cell.busy .lab{color:inherit;opacity:.7}
+.cell.sel{outline:3px solid var(--accent);outline-offset:1px;background:var(--cell-on)}
+.aisle{grid-column:1/-1;display:flex;align-items:center;justify-content:center;min-height:30px;border-block:2px dashed var(--line);font-family:var(--f-display);font-weight:600;font-size:13px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted)}
+.front{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:2px}
+.maplegend{display:flex;gap:14px;font-size:13px;color:var(--muted);margin-top:6px;flex-wrap:wrap}
+
+/* list items */
+.list{display:grid;gap:8px;margin-top:12px}
+.item{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;min-height:64px}
+.item .rack{font-family:var(--f-mono);font-weight:600;font-size:20px;background:var(--ticket);color:var(--ticket-ink);border-radius:6px;padding:6px 8px;min-width:78px;text-align:center}
+.item .meta{min-width:0}
+.item .meta b{font-weight:600}
+.item .meta small{display:block;color:var(--muted);font-size:13px}
+.item .loc{text-align:right;font-size:13px;color:var(--muted);line-height:1.25}
+.item .loc b{display:block;font-family:var(--f-mono);font-size:18px;color:var(--ink)}
+.item.out{opacity:.7}
+.item.out .rack{background:var(--cell);color:var(--muted)}
+.tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-radius:4px;padding:1px 5px;background:var(--cell);color:var(--muted);vertical-align:middle}
+.tag.hot{background:var(--warn);color:var(--surface)}
+
+.empty{background:var(--surface);border:1.5px dashed var(--line);border-radius:var(--r);padding:22px 18px;margin-top:16px}
+.empty h2{margin-top:0}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:52px;padding:0 18px;border-radius:var(--r);border:1.5px solid var(--line);background:var(--surface);font-weight:600;font-size:16px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.danger{border-color:var(--warn);color:var(--warn)}
+.btn.block{width:100%}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>.btn{flex:1 1 140px}
+
+/* form */
+.form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.f{display:flex;flex-direction:column;gap:4px;min-width:0}
+.f.full{grid-column:1/-1}
+.f label{font-family:var(--f-display);font-weight:600;font-size:14px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.f input,.f select{min-height:52px;border-radius:var(--r);border:1.5px solid var(--line);background:var(--surface);padding:0 12px;font-size:18px;width:100%;min-width:0}
+.f input.big{font-family:var(--f-mono);font-size:22px;font-weight:600}
+.f .err{color:var(--warn);font-size:13px;font-weight:600}
+.f.bad input{border-color:var(--warn)}
+.inline{display:flex;gap:8px}
+.inline input{flex:1}
+.inline .btn{flex:none;min-height:52px;padding:0 12px}
+.box{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px}
+
+/* ticket */
+.ticket{background:var(--ticket);color:var(--ticket-ink);border:2px solid var(--ticket-line);border-radius:6px;padding:10px 12px 12px}
+.ticket .th{font-family:var(--f-display);font-weight:700;font-size:18px;letter-spacing:.08em;text-transform:uppercase;border-bottom:2px solid var(--ticket-line);padding-bottom:4px;margin-bottom:8px;display:flex;justify-content:space-between;gap:8px}
+.tg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px 12px}
+.tg div{min-width:0}
+.tg label{display:block;font-family:var(--f-display);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em;opacity:.75}
+.tg span{font-family:var(--f-mono);font-weight:600;font-size:16px;overflow-wrap:anywhere}
+.tg .wide{grid-column:span 2}
+.tg .big span{font-size:26px}
+.where{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:14px 0 4px}
+.where .fz{font-family:var(--f-display);font-weight:700;font-size:24px;text-transform:uppercase}
+.where .sp{font-family:var(--f-mono);font-weight:600;font-size:28px;background:var(--accent);color:var(--accent-ink);border-radius:6px;padding:0 10px}
+.part{display:flex;gap:12px;align-items:center;margin:22px 0 12px;padding-top:14px;border-top:1px solid var(--line)}
+.part .pn{flex:none;width:32px;height:32px;border-radius:50%;background:var(--ink);color:var(--bg);display:grid;place-items:center;font-family:var(--f-mono);font-weight:600}
+.part b{display:block;font-family:var(--f-display);font-weight:700;font-size:20px;text-transform:uppercase;letter-spacing:.03em}
+.part small{color:var(--muted);font-size:14px}
+.lastt{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:12px 0 4px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px}
+.lastt .deg{font-family:var(--f-mono);font-weight:600;font-size:30px;line-height:1}
+.lastt .when{font-size:14px;color:var(--muted)}
+.lastt .when b{color:var(--ink)}
+.lastt.old .when b{color:var(--amber)}
+.tag.ready{background:var(--ok);color:var(--surface)}
+.proof{margin:14px 0 4px;background:var(--surface);border:2px solid var(--ok);border-radius:var(--r);padding:10px 12px}
+.proof label{display:block;font-family:var(--f-display);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.proof .fz{font-family:var(--f-display);font-weight:700;font-size:24px;text-transform:uppercase;margin-bottom:6px}
+.pg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pg span{font-family:var(--f-mono);font-weight:600;font-size:18px}
+.hist{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:4px;font-size:14px;color:var(--muted)}
+.hist li{display:flex;gap:10px}
+.hist .num{min-width:74px}
+
+/* sheet table */
+.tablewrap{overflow-x:auto;margin-top:12px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+table{border-collapse:collapse;font-size:14px;min-width:100%}
+th{background:var(--accent);color:var(--accent-ink);font-family:var(--f-display);font-weight:600;font-size:13px;letter-spacing:.04em;text-transform:uppercase;padding:8px 10px;text-align:left;white-space:nowrap}
+td{padding:8px 10px;border-top:1px solid var(--line);white-space:nowrap;font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+td.hot{color:var(--warn);font-weight:600}
+textarea#copyBox{width:100%;height:120px;margin-top:10px;font-family:var(--f-mono);font-size:12px;border-radius:var(--r);border:1px solid var(--line);background:var(--surface);padding:8px}
+
+/* settings */
+.fzrow{display:grid;grid-template-columns:1fr 64px 64px auto;gap:8px;align-items:end;padding-block:10px;border-bottom:1px solid var(--line)}
+.fzrow:last-child{border-bottom:0}
+.check{grid-column:1/-1;display:flex;align-items:center;gap:10px;font-weight:600;min-height:40px}
+.check input{width:22px;height:22px;accent-color:var(--accent)}
+.fzrow .f input{min-height:46px;font-size:16px}
+.fzrow .btn{min-height:46px;padding:0 12px}
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.pill{display:inline-flex;align-items:center;gap:6px;background:var(--cell);border-radius:99px;padding:6px 6px 6px 12px;font-weight:600}
+.pill button{border:0;background:var(--surface);border-radius:99px;width:30px;height:30px;font-size:16px;line-height:1}
+
+/* bottom sheet */
+.backdrop{position:fixed;inset:0;background:rgba(5,12,20,.5);z-index:20}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:21;max-height:90%;overflow:auto;background:var(--bg);border-radius:16px 16px 0 0;padding:14px 16px calc(20px + env(safe-area-inset-bottom,0px));max-width:760px;margin:0 auto;box-shadow:0 -8px 30px rgba(0,0,0,.25)}
+.sheet .grab{width:44px;height:5px;border-radius:5px;background:var(--line);margin:0 auto 10px}
+.sheet .x{float:right;border:0;background:var(--surface);border-radius:99px;width:40px;height:40px;font-size:20px}
+
+/* tab bar */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:10;background:var(--surface);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav.tabs button{border:0;background:none;min-height:62px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:12px;font-weight:600;color:var(--muted)}
+nav.tabs button[aria-current="true"]{color:var(--accent)}
+nav.tabs button.add[aria-current="true"] span.ic,nav.tabs button.add span.ic{background:var(--accent);color:var(--accent-ink);border-radius:99px;width:38px;height:30px;display:grid;place-items:center}
+
+.toast{position:fixed;left:50%;bottom:calc(80px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:30;background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:99px;font-weight:600;max-width:calc(100% - 32px);text-align:center}
+@media (max-width:420px){.form{grid-template-columns:1fr 1fr}.tg{grid-template-columns:repeat(2,1fr)}.fzrow{grid-template-columns:1fr 56px 56px}.fzrow .btn{grid-column:1/-1}}
+@media (prefers-reduced-motion:no-preference){.sheet{animation:up .18s ease-out}@keyframes up{from{transform:translateY(24px);opacity:.6}}}
+</style>
+<style>
+.sub{font-weight:500;text-transform:none;letter-spacing:0;opacity:.8}
+.tag.hold{background:var(--hold);color:var(--surface)}
+.tag.warnt{background:var(--amber);color:var(--surface)}
+.holdbar{background:var(--hold);color:var(--surface);border-radius:var(--r);padding:10px 12px;font-weight:700;margin:12px 0 4px}
+.cell.hold{box-shadow:inset 0 0 0 3px var(--hold)}
+.note{margin:12px 0 4px;background:var(--surface);border:1.5px dashed var(--amber);border-radius:var(--r);padding:8px 12px;white-space:pre-wrap;overflow-wrap:anywhere}
+.note label{display:block;font-family:var(--f-display);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--amber)}
+.item small.nt{color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+textarea.ta{width:100%;min-height:84px;border-radius:var(--r);border:1.5px solid var(--line);background:var(--surface);padding:10px 12px;font-size:17px;font-family:var(--f-body);color:var(--ink)}
+.reqlist{display:grid;gap:10px;margin-top:14px}
+.req{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px;display:grid;gap:8px}
+.req.done{opacity:.6}
+.req .rh{display:flex;gap:10px;align-items:flex-start;justify-content:space-between}
+.req .rh>div:first-child{min-width:0}
+.req .q{font-family:var(--f-mono);font-weight:600;font-size:22px;overflow-wrap:anywhere}
+.req .rb{display:flex;gap:6px;flex:none}
+.req .rb .btn{min-height:44px;padding:0 12px}
+.match{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;width:100%;text-align:left;border:0;border-top:1px dashed var(--line);background:none;padding:10px 0 2px;font-size:15px}
+.match .mf{font-family:var(--f-display);font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--accent)}
+.match .mt{text-align:right;font-size:15px}
+nav.tabs button{position:relative}
+.bdg{position:absolute;top:6px;left:calc(50% + 8px);min-width:20px;height:20px;border-radius:99px;background:var(--warn);color:var(--surface);font-size:12px;font-weight:700;display:grid;place-items:center;padding:0 5px}
+.lang{display:inline-flex;border:1.5px solid var(--line);border-radius:99px;overflow:hidden;flex:none}
+.lang button{border:0;background:var(--surface);min-width:40px;min-height:34px;font-weight:700;font-size:13px;color:var(--muted)}
+.lang button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.nr{display:block;margin-top:10px;padding:10px 12px;border-radius:var(--r);border:2px solid var(--amber);color:var(--amber);font-weight:600;background:var(--surface)}
+header.top .sync{margin-left:auto}
+@media (max-width:420px){header.top{flex-wrap:wrap}.sync{order:3}}
+</style>
+
+<div class="app">
+  <header class="top">
+    <div class="brand">Freezer RTE<small id="shiftLbl"></small></div>
+    <div class="sync" id="sync" role="status"><i></i><span></span></div>
+    <div class="lang" role="group" aria-label="Idioma / Language"><button type="button" data-act="lang" data-v="es">ES</button><button type="button" data-act="lang" data-v="en">EN</button></div>
+  </header>
+
+  <section id="v-inv">
+    <div class="search">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" data-tp="searchPh" data-ta="searchAria" autocomplete="off">
+    </div>
+    <div id="invBody"></div>
+  </section>
+
+  <section id="v-new" hidden>
+    <h2 id="newTitle"></h2>
+    <div class="part"><span class="pn">1</span><div><b data-t="part1"></b><small data-t="part1s"></small></div></div>
+    <div class="form">
+      <div class="f" id="w-fCode"><label for="fCode">Product code</label><input id="fCode" class="big" inputmode="numeric" autocomplete="off" placeholder="1234"></div>
+      <div class="f" id="w-fCart"><label for="fCart">RTE Cart #</label><input id="fCart" class="big" autocomplete="off" placeholder="19-20"><span class="err" id="dupWarn" style="color:var(--amber)" hidden></span></div>
+      <div class="f"><label for="fLot">Lot #</label><input id="fLot" inputmode="numeric" autocomplete="off" placeholder="6001"><span class="hint" id="lotHint" style="margin:0;font-size:13px" data-t="lotHint"></span></div>
+      <div class="f"><label for="fLine">Line</label><input id="fLine" inputmode="numeric" autocomplete="off" placeholder="3"></div>
+      <div class="f"><label for="fCcp">CCP2 #</label><input id="fCcp" autocomplete="off" placeholder="31-32-33-34"></div>
+      <div class="f"><label for="fDate">Date</label><input id="fDate" type="date"></div>
+      <div class="f full"><label>From</label><div class="chips" id="fromChips"></div></div>
+      <div class="f"><label for="fPacked">Packed time <span class="sub" data-t="packedHelp"></span></label><input id="fPacked" type="time"></div>
+    </div>
+    <div class="part"><span class="pn">2</span><div><b data-t="part2"></b><small data-t="part2s"></small></div></div>
+    <div class="form">
+      <div class="f full"><label data-t="where"></label><div id="pickNew"></div></div>
+      <div class="f" id="w-fTemp"><label for="fTemp" data-t="lblTempOpt"></label><input id="fTemp" class="big" inputmode="decimal" autocomplete="off" placeholder="—"><span class="err" id="tempWarn" data-t="hot80" hidden></span></div>
+      <div class="f"><label for="fTime" data-t="lblTimeIn"></label><div class="inline"><input id="fTime" type="time"><button class="btn" type="button" data-act="now" data-t="now"></button></div></div>
+      <div class="f full"><label for="fNote" data-t="noteLbl"></label><textarea id="fNote" class="ta" data-tp="notePh"></textarea></div>
+    </div>
+    <div class="row" style="margin-top:18px">
+      <button class="btn" type="button" data-act="cancelEdit" id="cancelEdit" data-t="cancel" hidden></button>
+      <button class="btn primary" type="button" data-act="save" id="saveBtn"></button>
+    </div>
+  </section>
+
+  <section id="v-req" hidden>
+    <h2 data-t="reqTitle"></h2>
+    <p class="hint" data-t="reqHint"></p>
+    <div class="form">
+      <div class="f full"><label for="rq" data-t="reqQ"></label><div class="inline"><input id="rq" class="big" autocomplete="off" placeholder="19-20, 1234"><button class="btn primary" type="button" data-act="reqAdd" data-t="reqAdd"></button></div></div>
+      <div class="f full"><label for="rqNote" data-t="reqNoteLbl"></label><input id="rqNote" autocomplete="off" data-tp="reqNotePh"></div>
+    </div>
+    <div id="reqBody" class="reqlist"></div>
+  </section>
+
+  <section id="v-sheet" hidden>
+    <h2 data-t="sheetTitle"></h2>
+    <p class="hint" data-t="sheetHint"></p>
+    <div class="form">
+      <div class="f"><label for="sDate" data-t="lblDate"></label><input id="sDate" type="date"></div>
+      <div class="f"><label for="sShift" data-t="lblShift"></label><select id="sShift"></select></div>
+    </div>
+    <div id="sheetBody"></div>
+  </section>
+
+  <section id="v-cfg" hidden>
+    <h2 data-t="tabCfg"></h2>
+    <div id="cfgBody"></div>
+  </section>
+</div>
+
+<nav class="tabs" data-ta="navAria">
+  <button type="button" data-act="tab" data-v="inv" aria-current="true"><span class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M4 10h16M8 6.5h2M8 13.5h2"/></svg></span><span data-t="tabInv"></span></button>
+  <button type="button" class="add" data-act="tab" data-v="new"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></span><span data-t="tabNew"></span></button>
+  <button type="button" data-act="tab" data-v="req"><span class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9zM8.5 12l1.8 1.8L14 10M8.5 17h7"/></svg></span><span data-t="tabReq"></span><span class="bdg" id="reqBadge" hidden></span></button>
+  <button type="button" data-act="tab" data-v="sheet"><span class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M4 8h16M4 13h16M10 8v13"/></svg></span><span data-t="tabSheet"></span></button>
+  <button type="button" data-act="tab" data-v="cfg"><span class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg></span><span data-t="tabCfg"></span></button>
+</nav>
+
+<div id="sheetLayer"></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function(){
+"use strict";
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const clone=o=>JSON.parse(JSON.stringify(o));
+const LS={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const newId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+
+/* ---------- language ---------- */
+const I18N={
+es:{
+  loading:'Cargando…',connecting:'Conectando…',savedLocal:'Guardado en este teléfono',pendingN:n=>'Sin señal · '+n+' por subir',saved:'Guardado',noShift:'Sin turno',
+  searchPh:'Buscar: código, lote o # de cart',searchAria:'Buscar carts',navAria:'Secciones',
+  tabInv:'Freezers',tabNew:'Entrada',tabSheet:'Hoja',tabCfg:'Ajustes',
+  newTitle:'Entrada al freezer',editTitle:'Editar cart',part1:'Del ticket',part1s:'Cópialo del RTE ID Ticket que trae el cart.',
+  part2:'Lo que tú anotas',part2s:'Dónde lo pusiste y, si la mides ahora, la temperatura con su hora. La hora de entrega ya viene en el ticket (Packed time).',
+  lblTempOpt:'Temp. °F (opcional)',lblTimeIn:'Hora de la temperatura',now:'Ahora',where:'¿Dónde lo pusiste?',hot80:'Está en 80°F o más. Avísale al supervisor.',
+  cancel:'Cancelar',saveIn:'Guardar entrada',saveChanges:'Guardar cambios',addFromsHint:'Agrega opciones en Ajustes.',
+  errCode:'Pon el código del producto.',errCart:'Pon el número del cart (RTE Cart #).',missing:'Faltan datos',
+  savedIn:(c,f)=>'Cart '+c+' guardado en '+f,changesSaved:'Cambios guardados',
+  sheetTitle:'Hoja del turno',sheetHint:'La hoja sale en inglés para la oficina. Tiene lo mismo que la hoja de papel, más dónde está cada cart y cuándo, a quién y a qué temperatura se entregó. Cópiala y pégala en Google Sheets, o descárgala para Excel.',
+  lblDate:'Fecha',lblShift:'Turno',all:'Todos',noRows:'No hay carts registrados en esta fecha.',copyBtn:'Copiar para Google Sheets',csvBtn:'Descargar para Excel',
+  pasteHint:'En Google Sheets toca una celda vacía y pega. Cada dato cae en su columna.',copyFail:'Tu teléfono no dejó copiar solo. Mantén el dedo en el cuadro, toca "Seleccionar todo" y "Copiar".',
+  copied:'Copiado. Ahora pégalo en Google Sheets',fileReady:'Archivo listo',waitRetry:'Espera un momento y vuelve a intentar',dlFail:'No se pudo descargar aquí. Usa "Copiar".',
+  emptyTitle:'Todavía no hay carts',emptyText:'Cada vez que entre un cart al freezer, toca <b>Entrada</b>, copia los datos del ticket y escoge dónde lo pusiste. Aquí vas a ver qué hay en cada freezer y en qué posición.',
+  firstCart:'Registrar primer cart',seeDemo:'Ver con datos de ejemplo',results:n=>n+' resultado'+(n===1?'':'s'),noHits:'Nada con eso. Prueba con el código del producto, el lote o el número del cart.',
+  occupied:(f,u,t)=>f+' · '+u+' de '+t+' posiciones ocupadas',tapSpot:'Toca una posición para ver qué hay ahí.',spot:s=>'Posición '+s,
+  inNow:n=>'En el freezer ahora ('+n+')',noneHere:'No hay carts aquí.',showDel:(s,n)=>(s?'Ocultar':'Ver')+' los entregados hoy ('+n+')',
+  sample:'ejemplo',ready:'listo',tempAgo:(t,a)=>'Temp '+t+'°F '+a,noTemp:'Sin temperatura',inAt:t=>'Registrado '+t,packedAt:t=>'Packed '+t,deliveredAt:t=>'Entregado '+t,lot:'Lote',
+  justNow:'ahora mismo',minAgo:m=>'hace '+m+' min',hAgo:(h,m)=>'hace '+h+' h'+(m?' '+m+' min':''),dAgo:d=>'hace '+d+' día'+(d>1?'s':''),
+  tapPick:'Toca un espacio para escoger la posición.',posLbl:'Posición:',noPos:'Sin posición',aisle:'Pasillo',
+  frontLegend:'Donde hay 2 o más, el <span class="front">subrayado</span> es el de enfrente (el último que entró).',spotAria:(s,n)=>'Posición '+s+(n?', '+n+' cart(s)':', vacía'),
+  close:'Cerrar',lblIn:'Registrado',hotIn:t=>'Entró a '+t+'°F. El límite en la hoja es por debajo de 80°F.',noSpot:'sin posición',
+  deliveredTo:'Entregado a',hour:'Hora',notRecorded:'no se anotó',date:'Fecha',lastTemp:'Última temperatura',noTempYet:'Todavía no tiene temperatura.',
+  takeTemp:'Medir temperatura',deliver:'Entregar',move:'Mover',undoDel:'Deshacer entrega',edit:'Editar datos',del:'Borrar',history:'Historial',
+  hIn:x=>'Entró a '+x,hMove:x=>'Movido a '+x,hOut:x=>'Entregado a '+x,hTemp:x=>'Temperatura: '+x+'°F',hUndo:'Entrega deshecha',
+  errTemp:'Pon la temperatura que mediste.',prev:'Medidas anteriores:',atTime:(t,h)=>t+'°F a las '+h,saveTemp:'Guardar temperatura',
+  whereMove:'¿A dónde lo mueves?',moveHere:'Mover aquí',whoGets:'¿A quién se entrega?',tempDeliver:'Temp. al entregar °F',
+  errDeliverTemp:'Mide y pon la temperatura. Es tu prueba de cómo lo entregaste.',deliverTime:'Hora de entrega',confirmDel:'Confirmar entrega',confirmAnyway:'Entregar de todos modos',
+  notReady:(l,t)=>'Ojo: todavía no está por debajo de '+l+'°F'+(t?' (está en '+t+'°F)':'')+'. ¿Seguro que lo quieres entregar?',
+  delQ:c=>'¿Borrar el cart '+c+' por completo? Desaparece también de la hoja. Si solo se entregó, usa "Entregar".',keep:'No, dejarlo',yesDel:'Sí, borrar',
+  movedTo:x=>'Movido a '+x,deliveredToast:(c,d,t)=>'Cart '+c+' entregado a '+d+' · '+t+'°F',undone:'Entrega deshecha',tempSaved:(c,t)=>'Cart '+c+': '+t+'°F guardado',deleted:'Borrado',
+  shiftNow:'Turno actual',shiftHint:'Se guarda con cada cart que registres y sale en la hoja.',fzTitle:'Freezers y posiciones',
+  fzHint:'Cada freezer es una cuadrícula: filas con letra (A, B, C…) y columnas con número. "B3" es fila B, columna 3. En el Blast Freezer: fila A a la derecha, fila B a la izquierda, 10 por lado, con el pasillo en el medio. Si un cart queda enfrente de otro, ponlo en la misma posición.',
+  name:'Nombre',rows:'Filas',cols:'Cols',remove:'Quitar',hasCarts:'Tiene carts adentro',aisleChk:'Pasillo en el medio',addFz:'+ Agregar freezer',add:'Agregar',removeX:x=>'Quitar '+x,
+  readyTitle:'¿Cuándo está listo?',readyLbl:'Listo por debajo de (°F)',readyHint:'Los carts cuya última temperatura esté por debajo de este número salen marcados como <span class="tag ready">listo</span>. Lo normal es 35°F. Algunos productos pueden ser diferentes. Déjalo vacío para no marcar ninguno.',
+  destTitle:'A quién se entrega',destPh:'Ej. Shipping',fromTitle:'De dónde vienen (From)',fromPh:'Ej. Line 2',
+  demoTitle:'Datos de ejemplo',demoHint:'Sirven para enseñar la app. Salen marcados como "ejemplo".',loadDemo:'Cargar ejemplos',clearDemo:n=>'Borrar ejemplos ('+n+')',
+  storeTitle:'Dónde se guarda',storeLocal:'Los datos se guardan solo en este teléfono.',storeCloud:'Los datos se guardan en tu cuenta y se ven en cualquier dispositivo donde abras esta página. Si no hay señal, se quedan en el teléfono y suben solos cuando vuelve.',
+  demoLoaded:'Ejemplos cargados',demoCleared:'Ejemplos borrados',errUpload:'No se pudo subir un registro. Sigue guardado en este teléfono.',errQuota:'La base de datos está llena. Borra registros viejos.',deletedFz:'Freezer borrado',
+  packedHelp:'· hora de empaque',noteLbl:'Nota (opcional)',notePh:'Ej. Lo puse aquí mientras hay espacio en el trailer',noteTitle:'Nota',addNote:'Agregar nota',editNote:'Editar nota',saveNote:'Guardar nota',noteSaved:'Nota guardada',hNote:x=>'Nota: '+x,notePrefix:'Nota:',
+  holdTag:'retenido',holdBanner:'RETENIDO: no se entrega a nadie hasta nueva orden',holdBtn:'Retener (no entregar)',unholdBtn:'Quitar retención',holdTitle:'Retener este cart',holdReasonLbl:'Motivo (opcional)',holdReasonPh:'Ej. Inspector',holdConfirm:'Retener',
+  unholdQ:'¿Quitar la retención? Hazlo solo cuando te den la orden.',unholdYes:'Sí, quitar',held:c=>'Cart '+c+' retenido',released:c=>'Retención quitada del cart '+c,hHold:x=>'Retenido'+(x?': '+x:''),hUnhold:'Retención quitada',
+  deliverBlocked:'Retenido: no se puede entregar',heldChip:'Retenidos',
+  tabReq:'Pedidos',reqTitle:'Pedidos',reqHint:'Cuando te pidan carts, escribe aquí los números tal como te los den. Pueden ser varios, separados por coma. La app te dice si cada número es un RTE Cart #, un Product code, un Lot # o un CCP2 #, dónde está el cart y si ya le mediste la temperatura después del pedido.',
+  reqQ:'Números que te dieron',reqNoteLbl:'Quién lo pide o para qué (opcional)',reqNotePh:'Ej. Supervisora, para inspección',reqAdd:'Agregar',reqEmpty:'No hay pedidos. Cuando te pidan un cart, anótalo aquí.',
+  reqNone:'No aparece en la app. Búscalo en el freezer y regístralo en Entrada.',reqDone:'Listo',reqUndo:'Reabrir',reqRemove:x=>'Quitar '+x,reqDoneTitle:n=>'Terminados ('+n+')',reqAsked:a=>'pedido '+a,
+  freshTemp:'Temp nueva',needTemp:'Falta temp nueva',matchAs:x=>'Es el '+x,reqAdded:n=>n===1?'Pedido agregado':n+' pedidos agregados',reqClearDone:'Borrar terminados',
+  bkTitle:'Respaldo',bkHint:'Guarda un archivo con todos los datos de este teléfono. Sirve para no perder nada si cambias de teléfono, o para pasar los datos a otro teléfono.',bkSave:'Guardar respaldo',bkLoad:'Cargar respaldo',
+  bkQ:n=>'Esto cambia los datos de este teléfono por los del respaldo ('+n+' carts). ¿Seguro?',bkYes:'Sí, cargar',bkDone:'Respaldo cargado',bkBad:'Ese archivo no es un respaldo de esta app.',bkSaved:'Respaldo listo',
+  lotHint:'Sale solo del Date. Si el ticket dice otro, cámbialo.',
+  dupCart:(c,w)=>'El cart '+c+' ya aparece dentro: '+w+'. Si ya salió, márcalo antes o revisa el número.',exactCart:'Cart exacto',
+  dayTitle:'Día de trabajo',dayLbl:'El día de trabajo empieza a las',dayHint:'Lo que registres antes de esta hora cuenta para el día anterior. Así, si haces overtime hasta la 1 AM, esos carts salen en la hoja del mismo turno y no se parten en dos días.'
+},
+en:{
+  loading:'Loading…',connecting:'Connecting…',savedLocal:'Saved on this phone',pendingN:n=>'Offline · '+n+' to upload',saved:'Saved',noShift:'No shift',
+  searchPh:'Search: code, lot or cart #',searchAria:'Search carts',navAria:'Sections',
+  tabInv:'Freezers',tabNew:'Check-in',tabSheet:'Log',tabCfg:'Settings',
+  newTitle:'Freezer check-in',editTitle:'Edit cart',part1:'From the ticket',part1s:'Copy it from the RTE ID Ticket on the cart.',
+  part2:'Your entries',part2s:'Where you put it and, if you take it now, the temperature and its time. The delivery time is already on the ticket (Packed time).',
+  lblTempOpt:'Temp °F (optional)',lblTimeIn:'Temperature time',now:'Now',where:'Where did you put it?',hot80:'It is 80°F or higher. Tell your supervisor.',
+  cancel:'Cancel',saveIn:'Save check-in',saveChanges:'Save changes',addFromsHint:'Add options in Settings.',
+  errCode:'Enter the product code.',errCart:'Enter the cart number (RTE Cart #).',missing:'Some information is missing',
+  savedIn:(c,f)=>'Cart '+c+' saved in '+f,changesSaved:'Changes saved',
+  sheetTitle:'Shift log',sheetHint:'This log has everything from the paper sheet, plus where each cart is and when, to whom and at what temperature it was delivered. Copy it into Google Sheets or download it for Excel.',
+  lblDate:'Date',lblShift:'Shift',all:'All',noRows:'No carts were checked in on this date.',copyBtn:'Copy for Google Sheets',csvBtn:'Download for Excel',
+  pasteHint:'In Google Sheets, tap an empty cell and paste. Each value lands in its own column.',copyFail:'Your phone blocked automatic copying. Press and hold the box, tap "Select All", then "Copy".',
+  copied:'Copied. Now paste it into Google Sheets',fileReady:'File ready',waitRetry:'Wait a moment and try again',dlFail:'Download is not available here. Use "Copy".',
+  emptyTitle:'No carts yet',emptyText:'Each time a cart goes into a freezer, tap <b>Check-in</b>, copy the ticket details and pick where you put it. This screen shows what is in each freezer and exactly where.',
+  firstCart:'Check in the first cart',seeDemo:'Try it with sample data',results:n=>n+' result'+(n===1?'':'s'),noHits:'No matches. Try the product code, lot or cart number.',
+  occupied:(f,u,t)=>f+' · '+u+' of '+t+' spots taken',tapSpot:'Tap a spot to see what is there.',spot:s=>'Spot '+s,
+  inNow:n=>'In the freezer now ('+n+')',noneHere:'No carts here.',showDel:(s,n)=>(s?'Hide':'Show')+' today\'s deliveries ('+n+')',
+  sample:'sample',ready:'ready',tempAgo:(t,a)=>'Temp '+t+'°F '+a,noTemp:'No temperature yet',inAt:t=>'Logged '+t,packedAt:t=>'Packed '+t,deliveredAt:t=>'Delivered '+t,lot:'Lot',
+  justNow:'just now',minAgo:m=>m+' min ago',hAgo:(h,m)=>h+' h'+(m?' '+m+' min':'')+' ago',dAgo:d=>d+' day'+(d>1?'s':'')+' ago',
+  tapPick:'Tap a spot to choose the location.',posLbl:'Spot:',noPos:'No spot',aisle:'Aisle',
+  frontLegend:'Where there are 2 or more, the <span class="front">underlined</span> one is in front (the last one in).',spotAria:(s,n)=>'Spot '+s+(n?', '+n+' cart(s)':', empty'),
+  close:'Close',lblIn:'Logged',hotIn:t=>'It came in at '+t+'°F. The sheet limit is below 80°F.',noSpot:'no spot',
+  deliveredTo:'Delivered to',hour:'Time',notRecorded:'not recorded',date:'Date',lastTemp:'Latest temperature',noTempYet:'No temperature taken yet.',
+  takeTemp:'Take temperature',deliver:'Deliver',move:'Move',undoDel:'Undo delivery',edit:'Edit details',del:'Delete',history:'History',
+  hIn:x=>'Checked in to '+x,hMove:x=>'Moved to '+x,hOut:x=>'Delivered to '+x,hTemp:x=>'Temperature: '+x+'°F',hUndo:'Delivery undone',
+  errTemp:'Enter the temperature you measured.',prev:'Earlier readings:',atTime:(t,h)=>t+'°F at '+h,saveTemp:'Save temperature',
+  whereMove:'Where are you moving it?',moveHere:'Move here',whoGets:'Who is it going to?',tempDeliver:'Delivery temp °F',
+  errDeliverTemp:'Measure and enter the temperature. It is your proof of how you delivered it.',deliverTime:'Delivery time',confirmDel:'Confirm delivery',confirmAnyway:'Deliver anyway',
+  notReady:(l,t)=>'Heads up: it is not below '+l+'°F yet'+(t?' (it is at '+t+'°F)':'')+'. Are you sure you want to deliver it?',
+  delQ:c=>'Delete cart '+c+' completely? It also disappears from the log. If it was only delivered, use "Deliver".',keep:'No, keep it',yesDel:'Yes, delete',
+  movedTo:x=>'Moved to '+x,deliveredToast:(c,d,t)=>'Cart '+c+' delivered to '+d+' · '+t+'°F',undone:'Delivery undone',tempSaved:(c,t)=>'Cart '+c+': '+t+'°F saved',deleted:'Deleted',
+  shiftNow:'Current shift',shiftHint:'It is saved with every cart you check in and shows on the log.',fzTitle:'Freezers and spots',
+  fzHint:'Each freezer is a grid: rows with letters (A, B, C…) and columns with numbers. "B3" means row B, column 3. In the Blast Freezer: row A on the right, row B on the left, 10 per side, with the aisle in the middle. If a cart is placed in front of another, use the same spot.',
+  name:'Name',rows:'Rows',cols:'Cols',remove:'Remove',hasCarts:'It has carts inside',aisleChk:'Aisle in the middle',addFz:'+ Add freezer',add:'Add',removeX:x=>'Remove '+x,
+  readyTitle:'When is a cart ready?',readyLbl:'Ready below (°F)',readyHint:'Carts whose latest temperature is below this number get a <span class="tag ready">ready</span> tag. 35°F is the usual rule; some products may differ. Leave it empty to turn the tag off.',
+  destTitle:'Delivery destinations',destPh:'e.g. Shipping',fromTitle:'Where carts come from (From)',fromPh:'e.g. Line 2',
+  demoTitle:'Sample data',demoHint:'Use it to show how the app works. Sample carts are tagged "sample".',loadDemo:'Load samples',clearDemo:n=>'Delete samples ('+n+')',
+  storeTitle:'Where data is saved',storeLocal:'Data is saved on this phone only.',storeCloud:'Data is saved to your account and shows on any device where you open this page. With no signal, it stays on the phone and uploads by itself when the signal comes back.',
+  demoLoaded:'Samples loaded',demoCleared:'Samples deleted',errUpload:'One record could not be uploaded. It is still saved on this phone.',errQuota:'The database is full. Delete old records.',deletedFz:'Deleted freezer',
+  packedHelp:'· time it was packed',noteLbl:'Note (optional)',notePh:'e.g. Parked here until the trailer has room',noteTitle:'Note',addNote:'Add note',editNote:'Edit note',saveNote:'Save note',noteSaved:'Note saved',hNote:x=>'Note: '+x,notePrefix:'Note:',
+  holdTag:'on hold',holdBanner:'ON HOLD: do not release to anyone until further notice',holdBtn:'Put on hold',unholdBtn:'Release hold',holdTitle:'Put this cart on hold',holdReasonLbl:'Reason (optional)',holdReasonPh:'e.g. Inspector',holdConfirm:'Put on hold',
+  unholdQ:'Release the hold? Only do this when you are told to.',unholdYes:'Yes, release',held:c=>'Cart '+c+' is on hold',released:c=>'Hold released on cart '+c,hHold:x=>'Put on hold'+(x?': '+x:''),hUnhold:'Hold released',
+  deliverBlocked:'On hold: cannot be delivered',heldChip:'On hold',
+  tabReq:'Requests',reqTitle:'Requests',reqHint:'When someone asks for carts, type the numbers here exactly as they give them. You can add several at once, separated by commas. The app tells you whether each number is an RTE Cart #, a Product code, a Lot # or a CCP2 #, where the cart is, and whether you have taken its temperature since the request.',
+  reqQ:'Numbers you were given',reqNoteLbl:'Who is asking or what for (optional)',reqNotePh:'e.g. Supervisor, for inspection',reqAdd:'Add',reqEmpty:'No requests. When someone asks for a cart, add it here.',
+  reqNone:'Not in the app. Look for it in the freezer and check it in.',reqDone:'Done',reqUndo:'Reopen',reqRemove:x=>'Remove '+x,reqDoneTitle:n=>'Done ('+n+')',reqAsked:a=>'requested '+a,
+  freshTemp:'Fresh temp',needTemp:'Needs a fresh temp',matchAs:x=>'Matches '+x,reqAdded:n=>n===1?'Request added':n+' requests added',reqClearDone:'Clear done',
+  bkTitle:'Backup',bkHint:'Save a file with all the data on this phone. Use it so nothing is lost if you change phones, or to move the data to another phone.',bkSave:'Save backup',bkLoad:'Load backup',
+  bkQ:n=>'This replaces the data on this phone with the backup ('+n+' carts). Are you sure?',bkYes:'Yes, load it',bkDone:'Backup loaded',bkBad:'That file is not a backup from this app.',bkSaved:'Backup ready',
+  lotHint:'Filled in from the Date. If the ticket says otherwise, change it.',
+  dupCart:(c,w)=>'Cart '+c+' already shows as inside: '+w+'. If it already left, mark it first or check the number.',exactCart:'Exact cart',
+  dayTitle:'Work day',dayLbl:'The work day starts at',dayHint:'Anything logged before this time counts toward the previous day. If you work overtime until 1 AM, those carts stay on the same shift log instead of splitting across two days.'
+}};
+let lang=LS.get('mc_lang','es'); if(!I18N[lang]) lang='es';
+function t(k,...a){const v=I18N[lang][k]!==undefined?I18N[lang][k]:I18N.es[k];return typeof v==='function'?v(...a):(v===undefined?k:v)}
+function applyStatic(){
+  document.documentElement.lang=lang;
+  document.querySelectorAll('[data-t]').forEach(e=>{e.textContent=t(e.dataset.t)});
+  document.querySelectorAll('[data-tp]').forEach(e=>{e.placeholder=t(e.dataset.tp)});
+  document.querySelectorAll('[data-ta]').forEach(e=>{e.setAttribute('aria-label',t(e.dataset.ta))});
+  document.querySelectorAll('[data-act="lang"]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===lang)));
+}
+
+const DEFAULT_CFG={shift:'2do turno',
+  freezers:[{id:'blast',name:'Blast Freezer',rows:2,cols:10,aisle:true},{id:'nuevo',name:'Freezer nuevo',rows:4,cols:8,aisle:false},{id:'trailer',name:'Trailer freezer',rows:2,cols:10,aisle:false}],
+  dests:['Packing','Kitchen','Otro departamento'],froms:['Kitchen','Spiral Oven'],readyTemp:'35',dayStart:'06:00'};
+function normCfg(c){
+  c=c&&typeof c==='object'?clone(c):{};
+  const d=DEFAULT_CFG;
+  return {shift:typeof c.shift==='string'?c.shift:d.shift,
+    freezers:Array.isArray(c.freezers)&&c.freezers.length?c.freezers.map(f=>({id:String(f.id||newId()),name:String(f.name||'Freezer'),rows:clampN(f.rows,1,26,4),cols:clampN(f.cols,1,30,6),aisle:!!f.aisle})):clone(d.freezers),
+    dests:Array.isArray(c.dests)?c.dests.map(String):clone(d.dests),
+    froms:Array.isArray(c.froms)?c.froms.map(String):clone(d.froms),readyTemp:c.readyTemp==null?d.readyTemp:String(c.readyTemp),dayStart:/^\d\d:\d\d$/.test(c.dayStart||'')?c.dayStart:d.dayStart};
+}
+function clampN(v,a,b,def){v=parseInt(v,10);return isNaN(v)?def:Math.min(b,Math.max(a,v))}
+
+/* ---------- state ---------- */
+let carts=LS.get('mc_carts',{})||{};
+let cfg=normCfg(LS.get('mc_cfg',null));
+let pending=LS.get('mc_pending',{})||{};
+let db=null, dbState='connecting';
+let view=LS.get('mc_view','inv'); if(!['inv','new','req','sheet','cfg'].includes(view)) view='inv';
+let picks=LS.get('mc_picks',null)||{items:[]}; if(!Array.isArray(picks.items)) picks={items:[]};
+let invFz='', spotFilter='', showOut=false;
+let form={fz:cfg.freezers[0].id,spot:'',from:cfg.froms[0]||''}, editId=null;
+let sheet=null;
+let dlNS=null, sDateTouched=false, timeTouched=false, bkPending=null;
+
+function saveLocal(){LS.set('mc_carts',carts);LS.set('mc_cfg',cfg);LS.set('mc_pending',pending);LS.set('mc_picks',picks)}
+function putPicks(){pending['picks/main']={op:'set',data:clone(picks)};saveLocal();renderAll();flush()}
+function putCart(c){c.upd=Date.now();carts[c.id]=c;pending['carts/'+c.id]={op:'set',data:clone(c)};saveLocal();renderAll();flush()}
+function removeCart(id){delete carts[id];pending['carts/'+id]={op:'delete'};saveLocal();renderAll();flush()}
+function putCfg(){pending['config/main']={op:'set',data:clone(cfg)};saveLocal();renderAll();flush()}
+
+/* ---------- sync ---------- */
+let flushing=false;
+async function flush(){
+  if(!db||flushing) return; flushing=true;
+  try{
+    for(const path of Object.keys(pending)){
+      const p=pending[path];
+      try{
+        if(p.op==='set') await db.doc(path).set(p.data); else await db.doc(path).delete();
+        if(pending[path]===p) delete pending[path];
+        saveLocal(); dbState='online';
+      }catch(e){
+        const code=e&&e.code;
+        if(code==='invalid_argument'||code==='transform_error'){delete pending[path];saveLocal();toast(t('errUpload'))}
+        else if(code==='quota_exceeded'){toast(t('errQuota'));break}
+        else if(code==='revoked'||code==='not_granted'||code==='capability_disabled'||code==='capability_removed'){db=null;dbState='local';break}
+        else {dbState='offline';break}
+      }
+    }
+  } finally {flushing=false;renderSync()}
+}
+setInterval(()=>{if(db&&Object.keys(pending).length) flush()},20000);
+window.addEventListener('online',()=>flush());
+
+function connect(){
+  const cl=window.claude;
+  if(!cl||typeof cl.use!=='function'){dbState='local';renderSync();return}
+  cl.use('downloads').then(ns=>{dlNS=ns;if(view==='sheet')renderSheet()}).catch(()=>{});
+  cl.use('db').then(ns=>{
+    if(!ns){dbState='local';renderSync();return}
+    db=ns; dbState='online';
+    db.collection('carts').onSnapshot(snap=>{
+      const server={}; snap.docs.forEach(d=>{server[d.id]=d.data()});
+      const next={};
+      for(const id in server){const p=pending['carts/'+id]; if(p){if(p.op==='set'&&carts[id]) next[id]=carts[id]} else next[id]=clone(server[id])}
+      for(const id in carts){ if(next[id]) continue; const p=pending['carts/'+id];
+        if((p&&p.op==='set')||snap.metadata.fromCache) next[id]=carts[id]; }
+      carts=next; saveLocal(); renderAll();
+    },()=>{dbState='offline';renderSync()});
+    db.doc('picks/main').onSnapshot(s=>{
+      if(pending['picks/main']) return;
+      if(s.exists){const d=s.data();picks={items:Array.isArray(d.items)?clone(d.items):[]};saveLocal();renderAll()}
+      else if(!s.metadata.fromCache&&picks.items.length){pending['picks/main']={op:'set',data:clone(picks)};saveLocal();flush()}
+    },()=>{});
+    db.doc('config/main').onSnapshot(s=>{
+      if(pending['config/main']) return;
+      if(s.exists){cfg=normCfg(s.data());fixForm();saveLocal();renderAll()}
+      else if(!s.metadata.fromCache){pending['config/main']={op:'set',data:clone(cfg)};saveLocal();flush()}
+    },()=>{});
+    flush(); renderSync();
+  }).catch(()=>{dbState='local';renderSync()});
+}
+
+function renderSync(){
+  const el=$('#sync'), n=Object.keys(pending).length;
+  let cls='',txt=t('connecting');
+  if(dbState==='local'){txt=t('savedLocal');cls='ok'}
+  else if(dbState==='connecting'){txt=t('connecting')}
+  else if(n){txt=t('pendingN',n);cls='pend'}
+  else {txt=t('saved');cls='ok'}
+  el.className='sync '+cls; el.querySelector('span').textContent=txt;
+}
+
+/* ---------- helpers ---------- */
+const pad=n=>String(n).padStart(2,'0');
+const dayKey=ms=>{const d=new Date(ms);return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
+const todayKey=()=>dayKey(Date.now());
+function workDay(ms){const d=new Date(ms);const [H,M]=(cfg.dayStart||'06:00').split(':').map(Number);if(d.getHours()*60+d.getMinutes()<H*60+M)d.setDate(d.getDate()-1);return dayKey(d.getTime())}
+const sheetTime=(ms,d)=>ms?fmtTime(ms)+(dayKey(ms)!==d?' ('+fmtDate(dayKey(ms)).slice(0,5)+')':''):'';
+const fmtTime=ms=>ms?new Date(ms).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}):'';
+const hhmm=ms=>{const d=new Date(ms);return pad(d.getHours())+':'+pad(d.getMinutes())};
+function fmt12(s){if(!s||!/^\d\d:\d\d/.test(s))return s||'';let [h,m]=s.split(':').map(Number);const ap=h>=12?'PM':'AM';h=h%12||12;return h+':'+pad(m)+' '+ap}
+function fmtDate(s){if(!s)return '';const [y,m,d]=s.split('-');return m+'/'+d+'/'+y.slice(2)}
+const fzById=id=>cfg.freezers.find(f=>f.id===id);
+const fzName=(id,en)=>{const f=fzById(id);return f?f.name:(id?(en?'Deleted freezer':t('deletedFz')):'—')};
+const spotLbl=(r,c)=>String.fromCharCode(65+r)+(c+1);
+const isHot=v=>{const n=parseFloat(v);return !isNaN(n)&&n>=80};
+function readings(c){return (c.temp?[{t:c.tempAt||c.inAt,temp:c.temp,entry:true}]:[]).concat(c.temps||[]).sort((a,b)=>a.t-b.t)}
+function lastT(c){const r=readings(c);return r.length?r[r.length-1]:null}
+function ago(ms){const m=Math.max(0,Math.round((Date.now()-ms)/60000));if(m<1)return t('justNow');if(m<60)return t('minAgo',m);const h=Math.floor(m/60);if(h<24)return t('hAgo',h,m%60);return t('dAgo',Math.floor(h/24))}
+const readyLim=()=>parseFloat(cfg.readyTemp);
+const belowLim=v=>{const lim=readyLim(),n=parseFloat(v);return !isNaN(lim)&&!isNaN(n)&&n<lim};
+function isReady(c){const l=lastT(c);return !!l&&belowLim(l.temp)}
+function occupancy(fz,exclude){const m={};Object.values(carts).forEach(c=>{if(c.status==='in'&&c.fz===fz&&c.spot&&c.id!==exclude)(m[c.spot]=m[c.spot]||[]).push(c)});return m}
+function fixForm(){if(!fzById(form.fz)){form.fz=cfg.freezers[0].id;form.spot=''} if(invFz&&invFz!=='__hold'&&!fzById(invFz)) invFz=''}
+
+let toastT;
+function toast(msg){const el=$('#toast');el.textContent=msg;el.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>{el.hidden=true},2600)}
+
+/* ---------- position picker ---------- */
+function picker(ctx,fz,spot,exclude){
+  const f=fzById(fz)||cfg.freezers[0];
+  let h='<div class="chips">'+cfg.freezers.map(x=>`<button type="button" class="chip" data-act="pickfz" data-ctx="${ctx}" data-id="${esc(x.id)}" aria-pressed="${x.id===f.id}">${esc(x.name)}</button>`).join('')+'</div>';
+  h+=gridHTML(f,spot,exclude,'pick',ctx);
+  h+=`<div class="maplegend"><span>${esc(t('tapPick'))}</span><span>${spot?esc(t('posLbl'))+' <b class="mono">'+esc(spot)+'</b>':esc(t('noPos'))}</span></div>`;
+  return h;
+}
+function gridHTML(f,sel,exclude,act,ctx){
+  const occ=occupancy(f.id,exclude);
+  let h=`<div class="mapwrap"><div class="map" style="grid-template-columns:repeat(${f.cols},minmax(64px,1fr))">`;
+  const mid=f.aisle&&f.rows>=2?Math.ceil(f.rows/2):-1;
+  for(let r=0;r<f.rows;r++){
+   if(r===mid) h+=`<div class="aisle">${esc(t('aisle'))}</div>`;
+   for(let c=0;c<f.cols;c++){
+    const s=spotLbl(r,c), o=(occ[s]||[]).slice().sort((a,b)=>b.inAt-a.inAt);
+    const who=o.map((x,k)=>o.length>1&&k===0?`<span class="front">${esc(x.cart)}</span>`:esc(x.cart)).join('<br>');
+    h+=`<button type="button" class="cell${o.length?' busy':''}${o.some(x=>x.hold)?' hold':''}${sel===s?' sel':''}" data-act="${act}" data-ctx="${ctx||''}" data-spot="${s}" aria-label="${esc(t('spotAria',s,o.length))}"><span class="lab">${s}</span><span class="who">${who}</span></button>`;
+   }
+  }
+  h+='</div></div>';
+  if(Object.values(occ).some(o=>o.length>1)) h+=`<div class="maplegend"><span>${t('frontLegend')}</span></div>`;
+  return h;
+}
+
+/* ---------- inventory ---------- */
+function itemHTML(c){
+  const out=c.status!=='in';
+  const loc=out?`${esc(t('deliveredAt',fmtTime(c.outAt)))}${c.outTemp?' · '+esc(c.outTemp)+'°F':''}<b>${esc(c.dest||'—')}</b>`:`${esc(fzName(c.fz))}<b>${esc(c.spot||'—')}</b>`;
+  const l=lastT(c);
+  return `<button type="button" class="item${out?' out':''}" data-act="open" data-id="${esc(c.id)}">
+    <span class="rack">${esc(c.cart||'?')}</span>
+    <span class="meta"><b>COD ${esc(c.code)}</b> · ${esc(t('lot'))} ${esc(c.lot||'—')} ${c.demo?`<span class="tag">${esc(t('sample'))}</span>`:''}${isHot(c.temp)?' <span class="tag hot">≥80°F</span>':''}${!out&&c.hold?` <span class="tag hold">${esc(t('holdTag'))}</span>`:''}${!out&&isReady(c)?` <span class="tag ready">${esc(t('ready'))}</span>`:''}
+      <small>${l?esc(t('tempAgo',l.temp,ago(l.t))):esc(t('noTemp'))} · ${esc(c.packed?t('packedAt',fmt12(c.packed)):t('inAt',fmtTime(c.inAt)))}</small>${c.note?`<small class="nt">${esc(t('notePrefix'))} ${esc(c.note)}</small>`:''}</span>
+    <span class="loc">${loc}</span></button>`;
+}
+function renderInv(){
+  const all=Object.values(carts), body=$('#invBody');
+  if(!all.length){
+    body.innerHTML=`<div class="empty"><h2>${esc(t('emptyTitle'))}</h2><p class="hint">${t('emptyText')}</p>
+      <div class="row"><button class="btn primary" type="button" data-act="tab" data-v="new">${esc(t('firstCart'))}</button><button class="btn" type="button" data-act="demo">${esc(t('seeDemo'))}</button></div></div>`;
+    return;
+  }
+  const inC=all.filter(c=>c.status==='in');
+  const q=$('#q').value.trim().toLowerCase();
+  let h='';
+  if(q){
+    const score=c=>cartTokens(c.cart).includes(q)||String(c.cart||'').toLowerCase()===q?0:String(c.code||'').toLowerCase()===q?1:String(c.lot||'').toLowerCase()===q?2:3;
+    const hits=all.filter(c=>[c.code,c.lot,c.cart,c.ccp2].some(v=>String(v||'').toLowerCase().includes(q)))
+      .sort((a,b)=>(a.status==='in'?0:1)-(b.status==='in'?0:1)||score(a)-score(b)||b.inAt-a.inAt);
+    h+=`<h3>${esc(t('results',hits.length))}</h3>`;
+    h+=hits.length?'<div class="list">'+hits.slice(0,60).map(itemHTML).join('')+'</div>':`<p class="hint">${esc(t('noHits'))}</p>`;
+    body.innerHTML=h; return;
+  }
+  h+='<div class="chips" style="margin-top:12px">'+`<button type="button" class="chip" data-act="fz" data-id="" aria-pressed="${!invFz}">${esc(t('all'))} <b>${inC.length}</b></button>`+
+     cfg.freezers.map(f=>`<button type="button" class="chip" data-act="fz" data-id="${esc(f.id)}" aria-pressed="${invFz===f.id}">${esc(f.name)} <b>${inC.filter(c=>c.fz===f.id).length}</b></button>`).join('')+
+     (inC.some(c=>c.hold)||invFz==='__hold'?`<button type="button" class="chip" data-act="fz" data-id="__hold" aria-pressed="${invFz==='__hold'}">${esc(t('heldChip'))} <b>${inC.filter(c=>c.hold).length}</b></button>`:'')+'</div>';
+  let list;
+  if(invFz==='__hold'){list=inC.filter(c=>c.hold)}
+  else if(invFz){
+    const f=fzById(invFz);
+    const occ=occupancy(f.id);
+    h+=`<h3>${esc(t('occupied',f.name,Object.keys(occ).length,f.rows*f.cols))}</h3>`;
+    h+=gridHTML(f,spotFilter,null,'cell');
+    h+=`<div class="maplegend"><span>${esc(t('tapSpot'))}</span>${spotFilter?`<button class="chip" type="button" data-act="cell" data-spot="${esc(spotFilter)}" aria-pressed="true">${esc(t('spot',spotFilter))} ✕</button>`:''}</div>`;
+    list=inC.filter(c=>c.fz===f.id&&(!spotFilter||c.spot===spotFilter));
+  } else list=inC;
+  list.sort((a,b)=>b.inAt-a.inAt);
+  h+=`<h3>${esc(t('inNow',list.length))}</h3>`;
+  h+=list.length?'<div class="list">'+list.map(itemHTML).join('')+'</div>':`<p class="hint">${esc(t('noneHere'))}</p>`;
+  const outToday=all.filter(c=>c.status!=='in'&&c.outAt&&workDay(c.outAt)===workDay(Date.now())&&(!invFz||invFz==='__hold'||c.fz===invFz)).sort((a,b)=>b.outAt-a.outAt);
+  if(outToday.length){
+    h+=`<div style="margin-top:14px"><button class="btn block" type="button" data-act="toggleOut">${esc(t('showDel',showOut,outToday.length))}</button></div>`;
+    if(showOut) h+='<div class="list">'+outToday.map(itemHTML).join('')+'</div>';
+  }
+  body.innerHTML=h;
+}
+
+/* ---------- entry form ---------- */
+function cartTokens(v){return String(v||'').toLowerCase().split(/[^0-9a-z]+/).filter(Boolean)}
+function dupCheck(){
+  const el=$('#dupWarn'), tk=cartTokens($('#fCart').value);
+  const hit=tk.length?Object.values(carts).find(c=>c.status==='in'&&c.id!==editId&&cartTokens(c.cart).some(x=>tk.includes(x))):null;
+  el.hidden=!hit; if(hit) el.textContent=t('dupCart',hit.cart,fzName(hit.fz)+(hit.spot?' · '+hit.spot:''));
+}
+function renderForm(){
+  $('#newTitle').textContent=t(editId?'editTitle':'newTitle');
+  $('#saveBtn').textContent=t(editId?'saveChanges':'saveIn');
+  $('#cancelEdit').hidden=!editId;
+  $('#fromChips').innerHTML=cfg.froms.map(x=>`<button type="button" class="chip" data-act="from" data-v="${esc(x)}" aria-pressed="${form.from===x}">${esc(x)}</button>`).join('')||`<span class="hint">${esc(t('addFromsHint'))}</span>`;
+  $('#pickNew').innerHTML=picker('new',form.fz,form.spot,editId);
+  $('#tempWarn').hidden=!isHot($('#fTemp').value);
+  dupCheck();
+}
+function lotFor(ds){if(!/^\d{4}-\d\d-\d\d$/.test(ds||''))return '';const x=new Date(ds+'T12:00');const doy=Math.round((x-new Date(x.getFullYear(),0,1,12))/864e5)+1;return String(x.getFullYear()).slice(-1)+String(doy).padStart(3,'0')}
+function onDateChange(){
+  const lot=$('#fLot'), d=$('#fDate'), prev=d.dataset.prev||'';
+  if(!lot.value.trim()||lot.value.trim()===lotFor(prev)) lot.value=lotFor(d.value);
+  d.dataset.prev=d.value;
+}
+function resetForm(keep){
+  const ids=keep?['fCart','fCcp','fTemp','fPacked','fNote']:['fCode','fCart','fLot','fLine','fCcp','fTemp','fPacked','fNote'];
+  ids.forEach(i=>{$('#'+i).value=''});
+  if(!keep){
+    const last=LS.get('mc_last',null)||{};
+    $('#fDate').value=last.tdate||todayKey(); $('#fDate').dataset.prev=$('#fDate').value;
+    $('#fLot').value=last.lot||lotFor($('#fDate').value); $('#fLine').value=last.line||'';
+    form.from=last.from&&cfg.froms.includes(last.from)?last.from:(cfg.froms[0]||'');
+  }
+  $('#fTime').value=hhmm(Date.now()); timeTouched=false;
+  form.spot='';
+  clearErrs();
+}
+function clearErrs(){document.querySelectorAll('.f.bad').forEach(e=>e.classList.remove('bad'));document.querySelectorAll('.f .err[data-v]').forEach(e=>e.remove())}
+function startEdit(id){
+  const c=carts[id]; if(!c) return;
+  editId=id; closeSheet();
+  $('#fCode').value=c.code||'';$('#fCart').value=c.cart||'';$('#fLot').value=c.lot||'';$('#fLine').value=c.line||'';
+  $('#fCcp').value=c.ccp2||'';$('#fTemp').value=c.temp||'';$('#fPacked').value=c.packed||'';$('#fNote').value=c.note||'';$('#fDate').value=c.tdate||'';$('#fDate').dataset.prev=c.tdate||'';
+  $('#fTime').value=hhmm(c.tempAt||c.inAt); timeTouched=true;
+  form={fz:c.fz||cfg.freezers[0].id,spot:c.spot||'',from:c.from||''};
+  setView('new');
+}
+function fieldErr(id,msg){const w=$('#w-'+id);w.classList.add('bad');const s=document.createElement('span');s.className='err';s.dataset.v='1';s.textContent=msg;w.appendChild(s)}
+function saveForm(){
+  clearErrs();
+  const v=id=>$('#'+id).value.trim();
+  let ok=true;
+  if(!v('fCode')){fieldErr('fCode',t('errCode'));ok=false}
+  if(!v('fCart')){fieldErr('fCart',t('errCart'));ok=false}
+  if(!ok){toast(t('missing'));return}
+  const base=editId&&carts[editId]?clone(carts[editId]):{id:newId(),status:'in',log:[],shift:cfg.shift};
+  const tDate=editId?new Date(base.tempAt||base.inAt):new Date();
+  const tm=v('fTime');
+  if(timeTouched&&/^\d\d:\d\d/.test(tm)){const [H,M]=tm.split(':').map(Number);tDate.setHours(H,M,0,0);if(tDate.getTime()>Date.now()+60000)tDate.setDate(tDate.getDate()-1)}
+  const inAt=editId?base.inAt:Date.now();
+  const prevFz=base.fz, prevSpot=base.spot, wasEditPre=!!editId;
+  Object.assign(base,{code:v('fCode'),cart:v('fCart'),lot:v('fLot'),line:v('fLine'),ccp2:v('fCcp'),temp:v('fTemp'),
+    from:form.from,packed:v('fPacked'),note:v('fNote'),tdate:v('fDate'),inAt,tempAt:v('fTemp')?tDate.getTime():0,fz:form.fz,spot:form.spot});
+  if(!editId) base.log.push({t:base.inAt,a:'in',fz:base.fz,spot:base.spot});
+  else if(prevFz!==base.fz||prevSpot!==base.spot) base.log.push({t:Date.now(),a:'move',fz:base.fz,spot:base.spot});
+  const wasEdit=!!editId;
+  putCart(base);
+  if(!wasEditPre) LS.set('mc_last',{tdate:base.tdate,lot:base.lot,line:base.line,from:base.from});
+  if(wasEdit){editId=null;resetForm(false);setView('inv');openCart(base.id);toast(t('changesSaved'))}
+  else {resetForm(true);renderForm();toast(t('savedIn',base.cart,fzName(base.fz)+(base.spot?' · '+base.spot:'')));window.scrollTo({top:0})}
+}
+
+/* ---------- cart detail (bottom sheet) ---------- */
+function openCart(id){sheet={id,mode:'view'};renderSheetLayer()}
+function closeSheet(){sheet=null;renderSheetLayer()}
+function outWarnText(c){
+  const lim=readyLim(); if(isNaN(lim)) return '';
+  const typed=(sheet.temp||'').trim();
+  const val=typed&&!isNaN(parseFloat(typed))?typed:(lastT(c)||{}).temp;
+  if(val==null||val==='') return '';
+  return belowLim(val)?'':t('notReady',cfg.readyTemp,val);
+}
+function renderSheetLayer(){
+  const L=$('#sheetLayer');
+  if(!sheet||!carts[sheet.id]){L.innerHTML='';return}
+  const c=carts[sheet.id], inF=c.status==='in';
+  let h=`<div class="backdrop" data-act="sClose"></div><div class="sheet" role="dialog" aria-modal="true" aria-label="Cart ${esc(c.cart)}"><button class="x" type="button" data-act="sClose" aria-label="${esc(t('close'))}">✕</button><div class="grab"></div>`;
+  h+=`<div class="ticket"><div class="th"><span>RTE ID Ticket</span>${c.demo?`<span class="tag">${esc(t('sample'))}</span>`:''}</div><div class="tg">
+    <div class="big"><label>Product code</label><span>${esc(c.code)}</span></div>
+    <div class="big wide"><label>RTE Cart #</label><span>${esc(c.cart)}</span></div>
+    <div><label>Date</label><span>${esc(fmtDate(c.tdate))||'—'}</span></div>
+    <div><label>Lot #</label><span>${esc(c.lot)||'—'}</span></div>
+    <div><label>Line</label><span>${esc(c.line)||'—'}</span></div>
+    <div class="wide"><label>CCP2 #</label><span>${esc(c.ccp2)||'—'}</span></div>
+    <div><label>From</label><span>${esc(c.from)||'—'}</span></div>
+    <div><label>Packed time <span class="sub">${esc(t('packedHelp'))}</span></label><span>${esc(fmt12(c.packed))||'—'}</span></div>
+    <div><label>${esc(t('lblIn'))}</label><span>${esc(fmtTime(c.inAt))}</span></div></div></div>`;
+  if(inF&&c.hold) h+=`<div class="holdbar" role="alert">${esc(t('holdBanner'))}${c.holdNote?' · '+esc(c.holdNote):''}</div>`;
+  if(isHot(c.temp)) h+=`<p class="hint" style="color:var(--warn);font-weight:600">${esc(t('hotIn',c.temp))}</p>`;
+  if(c.note&&sheet.mode!=='note') h+=`<div class="note"><label>${esc(t('noteTitle'))}</label>${esc(c.note)}</div>`;
+  if(inF) h+=`<div class="where"><span class="fz">${esc(fzName(c.fz))}</span>${c.spot?`<span class="sp">${esc(c.spot)}</span>`:`<span class="hint">${esc(t('noSpot'))}</span>`}</div>`;
+  else h+=`<div class="proof"><label>${esc(t('deliveredTo'))}</label><div class="fz">${esc(c.dest||'—')}</div>
+    <div class="pg"><div><label>${esc(t('hour'))}</label><span>${esc(fmtTime(c.outAt))}</span></div><div><label>Temp</label><span>${c.outTemp?esc(c.outTemp)+'°F':esc(t('notRecorded'))}</span></div><div><label>${esc(t('date'))}</label><span>${esc(fmtDate(dayKey(c.outAt)))}</span></div></div></div>`;
+
+  const lt=lastT(c);
+  if(inF&&sheet.mode!=='temp') h+=lt?`<div class="lastt${Date.now()-lt.t>3600000?' old':''}"><span class="deg">${esc(lt.temp)}°F</span><span class="when">${esc(t('lastTemp'))}<br><b>${esc(fmtTime(lt.t))} · ${esc(ago(lt.t))}</b></span>${isReady(c)?`<span class="tag ready">${esc(t('ready'))}</span>`:''}</div>`
+    :`<div class="lastt"><span class="when">${esc(t('noTempYet'))}</span></div>`;
+  if(sheet.mode==='view'){
+    h+=inF?`<div class="row" style="margin-top:12px"><button class="btn primary" type="button" data-act="sTemp">${esc(t('takeTemp'))}</button></div><div class="row" style="margin-top:10px">${c.hold?`<button class="btn" type="button" disabled>${esc(t('deliverBlocked'))}</button>`:`<button class="btn primary" type="button" data-act="sOut">${esc(t('deliver'))}</button>`}<button class="btn" type="button" data-act="sMove">${esc(t('move'))}</button></div>
+      <div class="row" style="margin-top:10px"><button class="btn" type="button" data-act="sNote">${esc(t(c.note?'editNote':'addNote'))}</button><button class="btn" type="button" data-act="${c.hold?'sUnhold':'sHold'}" style="border-color:var(--hold);color:var(--hold)">${esc(t(c.hold?'unholdBtn':'holdBtn'))}</button></div>`
+          :`<div class="row" style="margin-top:12px"><button class="btn" type="button" data-act="sUndo">${esc(t('undoDel'))}</button><button class="btn" type="button" data-act="sNote">${esc(t(c.note?'editNote':'addNote'))}</button></div>`;
+    h+=`<div class="row" style="margin-top:10px"><button class="btn" type="button" data-act="sEdit">${esc(t('edit'))}</button><button class="btn danger" type="button" data-act="sDel">${esc(t('del'))}</button></div>`;
+    const log=(c.log||[]).slice().sort((a,b)=>a.t-b.t);
+    if(log.length){
+      h+=`<h3>${esc(t('history'))}</h3><ul class="hist">`+log.map(e=>{
+        const where=fzName(e.fz)+(e.spot?' · '+e.spot:'');
+        const what=e.a==='in'?t('hIn',where):e.a==='move'?t('hMove',where):e.a==='out'?t('hOut',(e.dest||'—')+(e.temp?' · '+e.temp+'°F':'')):e.a==='temp'?t('hTemp',e.temp):e.a==='note'?t('hNote',String(e.note||'').slice(0,60)):e.a==='hold'?t('hHold',e.note||''):e.a==='unhold'?t('hUnhold'):t('hUndo');
+        return `<li><span class="num">${esc(fmtTime(e.t))}</span><span>${esc(what)}</span></li>`}).join('')+'</ul>';
+    }
+  } else if(sheet.mode==='note'){
+    h+=`<h3>${esc(t('noteTitle'))}</h3><textarea id="sNoteV" class="ta" placeholder="${esc(t('notePh'))}">${esc(sheet.note||'')}</textarea>
+      <div class="row" style="margin-top:14px"><button class="btn" type="button" data-act="sBack">${esc(t('cancel'))}</button><button class="btn primary" type="button" data-act="sNoteOk">${esc(t('saveNote'))}</button></div>`;
+  } else if(sheet.mode==='hold'){
+    h+=`<h3>${esc(t('holdTitle'))}</h3><div class="f"><label for="sHoldV">${esc(t('holdReasonLbl'))}</label><input id="sHoldV" autocomplete="off" placeholder="${esc(t('holdReasonPh'))}" value="${esc(sheet.note||'')}"></div>
+      <div class="row" style="margin-top:14px"><button class="btn" type="button" data-act="sBack">${esc(t('cancel'))}</button><button class="btn primary" type="button" data-act="sHoldOk" style="background:var(--hold);border-color:var(--hold)">${esc(t('holdConfirm'))}</button></div>`;
+  } else if(sheet.mode==='unhold'){
+    h+=`<p class="hint" style="font-weight:600">${esc(t('unholdQ'))}</p>
+      <div class="row"><button class="btn" type="button" data-act="sBack">${esc(t('cancel'))}</button><button class="btn" type="button" data-act="sUnholdOk" style="border-color:var(--hold);color:var(--hold)">${esc(t('unholdYes'))}</button></div>`;
+  } else if(sheet.mode==='temp'){
+    h+=`<h3>${esc(t('takeTemp'))}</h3><div class="form">
+      <div class="f${sheet.err?' bad':''}"><label for="sTempV">Temp °F</label><input id="sTempV" class="big" inputmode="decimal" autocomplete="off" value="${esc(sheet.temp||'')}">${sheet.err?`<span class="err">${esc(t('errTemp'))}</span>`:''}</div>
+      <div class="f"><label for="sTempT">${esc(t('hour'))}</label><input id="sTempT" type="time" value="${esc(sheet.time||'')}"></div></div>`;
+    const rs=readings(c).slice(-5).reverse();
+    if(rs.length) h+=`<p class="hint">${esc(t('prev'))} `+rs.map(r=>esc(t('atTime',r.temp,fmtTime(r.t)))).join(' · ')+'</p>';
+    h+=`<div class="row" style="margin-top:14px"><button class="btn" type="button" data-act="sBack">${esc(t('cancel'))}</button><button class="btn primary" type="button" data-act="sTempOk">${esc(t('saveTemp'))}</button></div>`;
+  } else if(sheet.mode==='move'){
+    h+=`<h3>${esc(t('whereMove'))}</h3>`+picker('move',sheet.fz,sheet.spot,c.id);
+    h+=`<div class="row" style="margin-top:14px"><button class="btn" type="button" data-act="sBack">${esc(t('cancel'))}</button><button class="btn primary" type="button" data-act="sMoveOk">${esc(t('moveHere'))}</button></div>`;
+  } else if(sheet.mode==='out'){
+    const w=outWarnText(c);
+    h+=`<h3>${esc(t('whoGets'))}</h3><div class="chips" style="flex-wrap:wrap">`+cfg.dests.map(d=>`<button type="button" class="chip" data-act="sDest" data-v="${esc(d)}" aria-pressed="${sheet.dest===d}">${esc(d)}</button>`).join('')+'</div>';
+    h+=`<div class="form" style="margin-top:12px">
+      <div class="f${sheet.err?' bad':''}"><label for="sOutTemp">${esc(t('tempDeliver'))}</label><input id="sOutTemp" class="big" inputmode="decimal" autocomplete="off" value="${esc(sheet.temp||'')}">${sheet.err?`<span class="err">${esc(t('errDeliverTemp'))}</span>`:''}</div>
+      <div class="f"><label for="sOutTime">${esc(t('deliverTime'))}</label><input id="sOutTime" type="time" value="${esc(sheet.time||'')}"></div></div>`;
+    h+=`<span class="nr" id="nrWarn" role="alert"${w?'':' hidden'}>${esc(w)}</span>`;
+    h+=`<div class="row" style="margin-top:14px"><button class="btn" type="button" data-act="sBack">${esc(t('cancel'))}</button><button class="btn primary" type="button" id="outOkBtn" data-act="sOutOk" ${sheet.dest?'':'disabled'}>${esc(t(w?'confirmAnyway':'confirmDel'))}</button></div>`;
+  } else if(sheet.mode==='del'){
+    h+=`<p class="hint" style="color:var(--warn);font-weight:600">${esc(t('delQ',c.cart))}</p>
+      <div class="row"><button class="btn" type="button" data-act="sBack">${esc(t('keep'))}</button><button class="btn danger" type="button" data-act="sDelOk">${esc(t('yesDel'))}</button></div>`;
+  }
+  h+='</div>';
+  L.innerHTML=h;
+}
+function refreshOutWarn(){
+  if(!sheet||sheet.mode!=='out'||!carts[sheet.id]) return;
+  const w=outWarnText(carts[sheet.id]), el=$('#nrWarn'), b=$('#outOkBtn');
+  if(el){el.textContent=w;el.hidden=!w}
+  if(b) b.textContent=t(w?'confirmAnyway':'confirmDel');
+}
+
+/* ---------- log (always in English) ---------- */
+function firstT(c){const r=readings(c);return r.length?r[0]:null}
+const COLS=[
+  ['#',(c,i)=>i+1],['Product Code',c=>c.code],['Lot #',c=>c.lot],['RTE Cart #',c=>c.cart],['CCP2 #',c=>c.ccp2],['Line',c=>c.line],['From',c=>c.from],['Packed Time',c=>fmt12(c.packed)],
+  ['Freezer',c=>fzName(c.fz,true)],['Location',c=>c.spot],['Logged At',(c,i,d)=>sheetTime(c.inAt,d)],
+  ['First Temp (°F)',c=>{const f=firstT(c);return f?f.temp:''}],['First Temp Time',(c,i,d)=>{const f=firstT(c);return f?sheetTime(f.t,d):''}],
+  ['Latest Temp (°F)',c=>{const r=readings(c);return r.length>1?r[r.length-1].temp:''}],['Latest Temp Time',(c,i,d)=>{const r=readings(c);return r.length>1?sheetTime(r[r.length-1].t,d):''}],
+  ['Status',c=>c.status==='in'?'In Freezer':'Delivered'],['On Hold',c=>c.status==='in'&&c.hold?'Yes':''],['Delivered To',c=>c.status==='in'?'':c.dest],
+  ['Delivery Time',(c,i,d)=>c.status==='in'?'':sheetTime(c.outAt,d)],['Delivery Temp (°F)',c=>c.status==='in'?'':(c.outTemp||'')],['Notes',c=>c.note||'']];
+function sheetRows(){
+  const d=$('#sDate').value||workDay(Date.now()), s=$('#sShift').value;
+  return Object.values(carts).filter(c=>workDay(c.inAt)===d&&(!s||c.shift===s)).sort((a,b)=>a.inAt-b.inAt);
+}
+function renderSheet(){
+  if(!sDateTouched||!$('#sDate').value) $('#sDate').value=workDay(Date.now());
+  const d=$('#sDate').value, cur=$('#sShift').value;
+  const shifts=[...new Set(Object.values(carts).filter(c=>workDay(c.inAt)===d).map(c=>c.shift).filter(Boolean))];
+  $('#sShift').innerHTML=`<option value="">${esc(t('all'))}</option>`+shifts.map(s=>`<option ${s===cur?'selected':''}>${esc(s)}</option>`).join('');
+  const rows=sheetRows();
+  let h='';
+  if(!rows.length) h=`<p class="hint" style="margin-top:14px">${esc(t('noRows'))}</p>`;
+  else{
+    h+='<div class="tablewrap"><table lang="en"><thead><tr>'+COLS.map(c=>`<th>${esc(c[0])}</th>`).join('')+'</tr></thead><tbody>'+
+      rows.map((r,i)=>'<tr>'+COLS.map(c=>{const v=c[1](r,i,d);return `<td${c[0]==='First Temp (°F)'&&isHot(v)?' class="hot"':''}>${esc(v)}</td>`}).join('')+'</tr>').join('')+'</tbody></table></div>';
+    h+=`<div class="row" style="margin-top:14px"><button class="btn primary" type="button" data-act="copy">${esc(t('copyBtn'))}</button>${canSave()?`<button class="btn" type="button" data-act="csv">${esc(t('csvBtn'))}</button>`:''}</div>
+      <p class="hint">${esc(t('pasteHint'))}</p><div id="copyWrap"></div>`;
+  }
+  $('#sheetBody').innerHTML=h;
+}
+function tableData(){
+  const rows=sheetRows(), d=$('#sDate').value;
+  const head=['Date','Shift',...COLS.map(c=>c[0])];
+  return [head,...rows.map((r,i)=>[fmtDate(d),r.shift||'',...COLS.map(c=>String(c[1](r,i,d)))])];
+}
+function doCopy(){
+  const tsv=tableData().map(r=>r.map(v=>String(v).replace(/[\t\n\r]+/g,' ')).join('\t')).join('\n');
+  const fallback=()=>{$('#copyWrap').innerHTML=`<p class="hint">${esc(t('copyFail'))}</p><textarea id="copyBox" readonly></textarea>`;const b=$('#copyBox');b.value=tsv;b.focus();b.select()};
+  try{navigator.clipboard.writeText(tsv).then(()=>toast(t('copied')),fallback)}catch(e){fallback()}
+}
+const standalone=!window.claude;
+const canSave=()=>!!dlNS||standalone;
+async function saveFile(name,text,mime){
+  if(dlNS){
+    try{await dlNS.save({filename:name,data:text});return true}
+    catch(e){if(e&&e.code==='declined')return false; if(e&&e.code==='rate_limited'){toast(t('waitRetry'));return false} toast(t('dlFail'));return false}
+  }
+  if(standalone){
+    try{const url=URL.createObjectURL(new Blob([text],{type:mime}));const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);return true}
+    catch(e){toast(t('dlFail'));return false}
+  }
+  toast(t('dlFail'));return false;
+}
+async function doCsv(){
+  if(!canSave()) return;
+  const csv='\ufeff'+tableData().map(r=>r.map(v=>{v=String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}).join(',')).join('\r\n');
+  if(await saveFile('RTE-freezer-log-'+($('#sDate').value||workDay(Date.now()))+'.csv',csv,'text/csv;charset=utf-8')) toast(t('fileReady'));
+}
+
+/* ---------- requests ---------- */
+const FIELD_RANK={'RTE Cart #':0,'Product code':1,'Lot #':2,'CCP2 #':3};
+function matchField(c,Q){
+  if(cartTokens(c.cart).includes(Q)||String(c.cart||'').toLowerCase()===Q) return 'RTE Cart #';
+  if(String(c.code||'').toLowerCase()===Q) return 'Product code';
+  if(String(c.lot||'').toLowerCase()===Q) return 'Lot #';
+  if(cartTokens(c.ccp2).includes(Q)||String(c.ccp2||'').toLowerCase()===Q) return 'CCP2 #';
+  return '';
+}
+function reqMatches(q){
+  const Q=q.toLowerCase(), all=Object.values(carts);
+  let m=all.map(c=>({c,f:matchField(c,Q)})).filter(x=>x.f);
+  if(!m.length) m=all.filter(c=>[c.cart,c.code,c.lot].some(v=>String(v||'').toLowerCase().includes(Q))).map(c=>({c,f:''}));
+  m.sort((a,b)=>(FIELD_RANK[a.f]??9)-(FIELD_RANK[b.f]??9)||b.c.inAt-a.c.inAt);
+  return m.filter(x=>x.c.status==='in').concat(m.filter(x=>x.c.status!=='in').slice(0,2)).slice(0,8);
+}
+function reqHTML(x){
+  const list=reqMatches(x.q);
+  let h=`<div class="req${x.done?' done':''}"><div class="rh"><div><div class="q">${esc(x.q)}</div><small class="hint">${x.note?esc(x.note)+' · ':''}${esc(t('reqAsked',ago(x.at)))}</small></div>
+    <div class="rb"><button class="btn" type="button" data-act="reqDone" data-id="${esc(x.id)}">${esc(t(x.done?'reqUndo':'reqDone'))}</button><button class="btn" type="button" data-act="reqDel" data-id="${esc(x.id)}" aria-label="${esc(t('reqRemove',x.q))}">✕</button></div></div>`;
+  if(!list.length) h+=`<p class="hint" style="margin:0">${esc(t('reqNone'))}</p>`;
+  h+=list.map(({c,f})=>{
+    const l=lastT(c), fresh=!!l&&l.t>=x.at, inF=c.status==='in';
+    const where=inF?`<b>${esc(fzName(c.fz))}${c.spot?' · '+esc(c.spot):''}</b>`:esc(t('deliveredTo')+' '+(c.dest||'—'));
+    return `<button type="button" class="match" data-act="open" data-id="${esc(c.id)}">
+      <span>${f?`<span class="mf">${esc(t('matchAs',f))}</span><br>`:''}RTE Cart # <b class="mono">${esc(c.cart)}</b> · COD ${esc(c.code)} · ${esc(t('lot'))} ${esc(c.lot||'—')}${inF&&c.hold?` <span class="tag hold">${esc(t('holdTag'))}</span>`:''}<br>${where}</span>
+      <span class="mt">${l?`<b class="mono">${esc(l.temp)}°F</b><br><small>${esc(ago(l.t))}</small>`:`<small>${esc(t('noTemp'))}</small>`}${inF?`<br><span class="tag ${fresh?'ready':'warnt'}">${esc(t(fresh?'freshTemp':'needTemp'))}</span>`:''}</span></button>`}).join('');
+  return h+'</div>';
+}
+function renderReq(){
+  const items=picks.items||[];
+  const open=items.filter(x=>!x.done).sort((a,b)=>b.at-a.at), done=items.filter(x=>x.done).sort((a,b)=>b.at-a.at);
+  let h='';
+  if(!items.length) h=`<div class="empty" style="margin-top:0"><p class="hint" style="margin:0">${esc(t('reqEmpty'))}</p></div>`;
+  h+=open.map(reqHTML).join('');
+  if(done.length) h+=`<h3>${esc(t('reqDoneTitle',done.length))}</h3>`+done.map(reqHTML).join('')+`<button class="btn block" type="button" data-act="reqClear">${esc(t('reqClearDone'))}</button>`;
+  $('#reqBody').innerHTML=h;
+}
+function renderBadge(){const n=(picks.items||[]).filter(x=>!x.done).length,b=$('#reqBadge');b.hidden=!n;b.textContent=n}
+
+/* ---------- settings ---------- */
+function renderCfg(){
+  const inCount=id=>Object.values(carts).filter(c=>c.status==='in'&&c.fz===id).length;
+  let h=`<div class="box"><div class="f"><label>${lang==='es'?'Idioma':'Language'}</label><div class="chips"><button type="button" class="chip" data-act="lang" data-v="es" aria-pressed="${lang==='es'}">Español</button><button type="button" class="chip" data-act="lang" data-v="en" aria-pressed="${lang==='en'}">English</button></div></div></div>`;
+  h+=`<div class="box" style="margin-top:12px"><div class="f"><label for="cShift">${esc(t('shiftNow'))}</label><input id="cShift" data-cfg="shift" value="${esc(cfg.shift)}" placeholder="2do turno"></div>
+    <p class="hint" style="margin-bottom:0">${esc(t('shiftHint'))}</p></div>`;
+  h+=`<h3>${esc(t('fzTitle'))}</h3><p class="hint">${esc(t('fzHint'))}</p><div class="box">`;
+  h+=cfg.freezers.map((f,i)=>{const n=inCount(f.id);return `<div class="fzrow">
+    <div class="f"><label for="fzn${i}">${esc(t('name'))}</label><input id="fzn${i}" data-cfg="fzname" data-i="${i}" value="${esc(f.name)}"></div>
+    <div class="f"><label for="fzr${i}">${esc(t('rows'))}</label><input id="fzr${i}" data-cfg="fzrows" data-i="${i}" inputmode="numeric" value="${f.rows}"></div>
+    <div class="f"><label for="fzc${i}">${esc(t('cols'))}</label><input id="fzc${i}" data-cfg="fzcols" data-i="${i}" inputmode="numeric" value="${f.cols}"></div>
+    <button class="btn" type="button" data-act="rmFz" data-i="${i}" ${n||cfg.freezers.length<2?'disabled':''} title="${n?esc(t('hasCarts')):''}">${esc(t('remove'))}</button>
+    <label class="check"><input type="checkbox" id="fza${i}" data-cfg="fzaisle" data-i="${i}" ${f.aisle?'checked':''}> ${esc(t('aisleChk'))}</label></div>`}).join('');
+  h+=`</div><div style="margin-top:10px"><button class="btn block" type="button" data-act="addFz">${esc(t('addFz'))}</button></div>`;
+  const listEd=(key,title,ph)=>`<h3>${esc(title)}</h3><div class="box"><div class="pills">${cfg[key].map((d,i)=>`<span class="pill">${esc(d)}<button type="button" data-act="rmItem" data-k="${key}" data-i="${i}" aria-label="${esc(t('removeX',d))}">✕</button></span>`).join('')}</div>
+    <div class="inline" style="margin-top:10px"><input id="add-${key}" placeholder="${esc(ph)}" aria-label="${esc(title)}" style="min-height:48px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);padding:0 12px"><button class="btn" type="button" data-act="addItem" data-k="${key}">${esc(t('add'))}</button></div></div>`;
+  h+=`<h3>${esc(t('readyTitle'))}</h3><div class="box"><div class="f" style="max-width:240px"><label for="cReady">${esc(t('readyLbl'))}</label><input id="cReady" data-cfg="ready" inputmode="decimal" value="${esc(cfg.readyTemp)}" placeholder="35"></div>
+    <p class="hint" style="margin-bottom:0">${t('readyHint')}</p></div>`;
+  h+=`<h3>${esc(t('dayTitle'))}</h3><div class="box"><div class="f" style="max-width:240px"><label for="cDay">${esc(t('dayLbl'))}</label><input id="cDay" type="time" data-cfg="day" value="${esc(cfg.dayStart)}"></div>
+    <p class="hint" style="margin-bottom:0">${esc(t('dayHint'))}</p></div>`;
+  h+=listEd('dests',t('destTitle'),t('destPh'));
+  h+=listEd('froms',t('fromTitle'),t('fromPh'));
+  const demos=Object.values(carts).filter(c=>c.demo).length;
+  h+=`<h3>${esc(t('demoTitle'))}</h3><div class="box"><p class="hint" style="margin-top:0">${esc(t('demoHint'))}</p><div class="row">
+    <button class="btn" type="button" data-act="demo">${esc(t('loadDemo'))}</button><button class="btn danger" type="button" data-act="clearDemo" ${demos?'':'disabled'}>${esc(t('clearDemo',demos))}</button></div></div>`;
+  h+=`<h3>${esc(t('storeTitle'))}</h3><p class="hint">${esc(t(dbState==='local'?'storeLocal':'storeCloud'))}</p>`;
+  h+=`<h3>${esc(t('bkTitle'))}</h3><div class="box"><p class="hint" style="margin-top:0">${esc(t('bkHint'))}</p>
+    ${bkPending?`<p class="hint" style="font-weight:600;color:var(--warn)">${esc(t('bkQ',Object.keys(bkPending.carts||{}).length))}</p><div class="row"><button class="btn" type="button" data-act="bkCancel">${esc(t('cancel'))}</button><button class="btn danger" type="button" data-act="bkApply">${esc(t('bkYes'))}</button></div>`
+    :`<div class="row">${canSave()?`<button class="btn" type="button" data-act="bkSave">${esc(t('bkSave'))}</button>`:''}<label class="btn" for="bkFile">${esc(t('bkLoad'))}</label></div>`}
+    <input id="bkFile" type="file" accept=".json,application/json" hidden></div>`;
+  $('#cfgBody').innerHTML=h;
+}
+function loadDemo(){
+  const base=Date.now()-3*3600000, at=(hh,mm)=>base+((hh-15)*60+mm)*60000;
+  const td=todayKey(), fz=cfg.freezers.map(f=>f.id), d1=()=>cfg.dests[0]||'Packing';
+  const L=lotFor(td);
+  const rows=[
+    ['1101',L,'31-32','28','25.2',at(15,3),'Kitchen','3','14:40',fz[0],'A1'],
+    ['1101',L,'29-30','27','27.8',at(15,9),'Kitchen','3','14:45',fz[0],'A2'],
+    ['1205',L,'15-16','8','31.8',at(15,25),'Spiral Oven','1','10:20',fz[0],'A1'],
+    ['1330',L,'21-22','35-36-37','',at(15,41),'Kitchen','3','15:10',fz[1]||fz[0],'A1'],
+    ['1330',L,'19-20','31-32-33-34','',at(15,50),'Kitchen','3','19:50',fz[1]||fz[0],'C5'],
+    ['1418',L,'9-10','25','47.3',at(15,57),'Kitchen','2','15:20',fz[2]||fz[0],'A3'],
+    ['1101',L,'23-24','22','54.2',at(16,0),'Kitchen','3','15:30',fz[2]||fz[0],'B7']];
+  rows.forEach((r,i)=>{
+    const c={id:'demo'+i,demo:true,status:'in',shift:cfg.shift,code:r[0],lot:r[1],cart:r[2],ccp2:r[3],temp:r[4],inAt:r[5],from:r[6],line:r[7],packed:r[8],tdate:td,fz:r[9],spot:r[10],log:[{t:r[5],a:'in',fz:r[9],spot:r[10]}]};
+    if(i===1){c.status='out';c.outAt=at(16,30);c.dest=d1();c.outTemp='28.1';c.log.push({t:c.outAt,a:'out',dest:c.dest,temp:c.outTemp})}
+    if(i===0||i===2){c.temps=[{t:at(16,40),temp:i?'14.2':'38.6'}];c.log.push({t:at(16,40),a:'temp',temp:c.temps[0].temp})}
+    if(i===4){c.temps=[{t:at(17,50),temp:'18.5'}];c.log.push({t:at(17,50),a:'temp',temp:'18.5'})}
+    carts[c.id]=c; pending['carts/'+c.id]={op:'set',data:clone(c)};
+  });
+  saveLocal();renderAll();flush();toast(t('demoLoaded'));
+}
+
+/* ---------- views ---------- */
+function setView(v){
+  view=v;LS.set('mc_view',v);
+  ['inv','new','req','sheet','cfg'].forEach(k=>{$('#v-'+k).hidden=k!==v});
+  document.querySelectorAll('nav.tabs button').forEach(b=>b.setAttribute('aria-current',String(b.dataset.v===v)));
+  renderAll();window.scrollTo({top:0});
+}
+function renderAll(){
+  $('#shiftLbl').textContent=cfg.shift||t('noShift');
+  if(view==='inv')renderInv();
+  else if(view==='new')renderForm();
+  else if(view==='req')renderReq();
+  else if(view==='sheet')renderSheet();
+  else if(view==='cfg')renderCfg();
+  renderSheetLayer();renderSync();renderBadge();
+}
+
+/* ---------- events ---------- */
+const A={
+  lang:b=>{lang=b.dataset.v==='en'?'en':'es';LS.set('mc_lang',lang);applyStatic();renderAll()},
+  tab:b=>{if(b.dataset.v!=='new'&&editId){editId=null;resetForm(false)} setView(b.dataset.v)},
+  fz:b=>{invFz=b.dataset.id;spotFilter='';renderInv()},
+  cell:b=>{const s=b.dataset.spot;const o=occupancy(invFz)[s]||[];
+    if(o.length===1&&spotFilter!==s){openCart(o[0].id);return}
+    spotFilter=spotFilter===s?'':s;renderInv()},
+  open:b=>openCart(b.dataset.id),
+  toggleOut:()=>{showOut=!showOut;renderInv()},
+  pickfz:b=>{if(b.dataset.ctx==='new'){form.fz=b.dataset.id;form.spot='';renderForm()}else{sheet.fz=b.dataset.id;sheet.spot='';renderSheetLayer()}},
+  pick:b=>{const s=b.dataset.spot;if(b.dataset.ctx==='new'){form.spot=form.spot===s?'':s;renderForm()}else{sheet.spot=sheet.spot===s?'':s;renderSheetLayer()}},
+  from:b=>{form.from=form.from===b.dataset.v?'':b.dataset.v;renderForm()},
+  now:()=>{$('#fTime').value=hhmm(Date.now());timeTouched=false},
+  save:()=>saveForm(),
+  cancelEdit:()=>{const id=editId;editId=null;resetForm(false);setView('inv');if(id)openCart(id)},
+  sClose:()=>closeSheet(),
+  sBack:()=>{sheet.mode='view';renderSheetLayer()},
+  sMove:()=>{const c=carts[sheet.id];Object.assign(sheet,{mode:'move',fz:c.fz||cfg.freezers[0].id,spot:c.spot||''});renderSheetLayer()},
+  sMoveOk:()=>{const c=clone(carts[sheet.id]);c.fz=sheet.fz;c.spot=sheet.spot;(c.log=c.log||[]).push({t:Date.now(),a:'move',fz:c.fz,spot:c.spot});sheet.mode='view';putCart(c);toast(t('movedTo',fzName(c.fz)+(c.spot?' · '+c.spot:'')))},
+  sNote:()=>{sheet.mode='note';sheet.note=carts[sheet.id].note||'';renderSheetLayer();const i=$('#sNoteV');if(i)i.focus()},
+  sNoteOk:()=>{const c=clone(carts[sheet.id]);const n=(sheet.note||'').trim();if(n===(c.note||'')){sheet.mode='view';renderSheetLayer();return}
+    c.note=n;(c.log=c.log||[]).push({t:Date.now(),a:'note',note:n});sheet.mode='view';putCart(c);toast(t('noteSaved'))},
+  sHold:()=>{sheet.mode='hold';sheet.note='';renderSheetLayer();const i=$('#sHoldV');if(i)i.focus()},
+  sHoldOk:()=>{const c=clone(carts[sheet.id]);c.hold=true;c.holdNote=(sheet.note||'').trim();c.holdAt=Date.now();(c.log=c.log||[]).push({t:c.holdAt,a:'hold',note:c.holdNote});sheet.mode='view';putCart(c);toast(t('held',c.cart))},
+  sUnhold:()=>{sheet.mode='unhold';renderSheetLayer()},
+  sUnholdOk:()=>{const c=clone(carts[sheet.id]);c.hold=false;c.holdNote='';(c.log=c.log||[]).push({t:Date.now(),a:'unhold'});sheet.mode='view';putCart(c);toast(t('released',c.cart))},
+  reqAdd:()=>{const qs=$('#rq').value.split(/[,;\s]+/).map(x=>x.trim()).filter(Boolean);if(!qs.length)return;
+    const note=$('#rqNote').value.trim(),now=Date.now();
+    picks.items=(picks.items||[]).concat(qs.map((q,k)=>({id:newId()+k,q,note,at:now,done:false})));
+    while(picks.items.length>150){const i=picks.items.findIndex(x=>x.done);if(i<0)break;picks.items.splice(i,1)}
+    $('#rq').value='';putPicks();toast(t('reqAdded',qs.length))},
+  reqDone:b=>{const x=picks.items.find(i=>i.id===b.dataset.id);if(!x)return;x.done=!x.done;putPicks()},
+  reqDel:b=>{picks.items=picks.items.filter(i=>i.id!==b.dataset.id);putPicks()},
+  reqClear:()=>{picks.items=picks.items.filter(i=>!i.done);putPicks()},
+  sOut:()=>{Object.assign(sheet,{mode:'out',dest:'',temp:'',err:false,time:hhmm(Date.now())});renderSheetLayer()},
+  sDest:b=>{sheet.dest=b.dataset.v;renderSheetLayer()},
+  sOutOk:()=>{if(!sheet.dest||carts[sheet.id].hold)return;
+    const temp=(sheet.temp||'').trim();
+    if(!temp||isNaN(parseFloat(temp))){sheet.err=true;renderSheetLayer();const i=$('#sOutTemp');if(i)i.focus();return}
+    const c=clone(carts[sheet.id]);const d=new Date();
+    if(/^\d\d:\d\d/.test(sheet.time||'')){const [H,M]=sheet.time.split(':').map(Number);d.setHours(H,M,0,0);if(d.getTime()>Date.now()+60000)d.setDate(d.getDate()-1)}
+    c.status='out';c.outAt=d.getTime();c.dest=sheet.dest;c.outTemp=temp;
+    (c.log=c.log||[]).push({t:c.outAt,a:'out',dest:c.dest,temp});
+    closeSheet();putCart(c);toast(t('deliveredToast',c.cart,c.dest,temp))},
+  sUndo:()=>{const c=clone(carts[sheet.id]);c.status='in';c.outAt=0;c.dest='';c.outTemp='';(c.log=c.log||[]).push({t:Date.now(),a:'undo'});putCart(c);toast(t('undone'))},
+  sEdit:()=>startEdit(sheet.id),
+  sTemp:()=>{Object.assign(sheet,{mode:'temp',temp:'',err:false,time:hhmm(Date.now())});renderSheetLayer();const i=$('#sTempV');if(i)i.focus()},
+  sTempOk:()=>{const temp=(sheet.temp||'').trim();
+    if(!temp||isNaN(parseFloat(temp))){sheet.err=true;renderSheetLayer();return}
+    const c=clone(carts[sheet.id]);const d=new Date();
+    if(/^\d\d:\d\d/.test(sheet.time||'')){const [H,M]=sheet.time.split(':').map(Number);d.setHours(H,M,0,0);if(d.getTime()>Date.now()+60000)d.setDate(d.getDate()-1)}
+    (c.temps=c.temps||[]).push({t:d.getTime(),temp});(c.log=c.log||[]).push({t:d.getTime(),a:'temp',temp});
+    sheet.mode='view';putCart(c);toast(t('tempSaved',c.cart,temp))},
+  sDel:()=>{sheet.mode='del';renderSheetLayer()},
+  sDelOk:()=>{const id=sheet.id;closeSheet();removeCart(id);toast(t('deleted'))},
+  copy:()=>doCopy(), csv:()=>doCsv(),
+  bkSave:async()=>{const data=JSON.stringify({app:'freezer-rte',v:1,exportedAt:new Date().toISOString(),carts,cfg,picks});
+    if(await saveFile('freezer-rte-backup-'+todayKey()+'.json',data,'application/json')) toast(t('bkSaved'))},
+  bkCancel:()=>{bkPending=null;renderCfg()},
+  bkApply:()=>{const b=bkPending;bkPending=null;if(!b)return;
+    Object.keys(carts).forEach(id=>{if(!b.carts[id])pending['carts/'+id]={op:'delete'}});
+    carts=clone(b.carts);Object.keys(carts).forEach(id=>{pending['carts/'+id]={op:'set',data:clone(carts[id])}});
+    cfg=normCfg(b.cfg);pending['config/main']={op:'set',data:clone(cfg)};
+    picks={items:Array.isArray(b.picks&&b.picks.items)?clone(b.picks.items):[]};pending['picks/main']={op:'set',data:clone(picks)};
+    fixForm();saveLocal();renderAll();flush();toast(t('bkDone'))},
+  demo:()=>loadDemo(),
+  clearDemo:()=>{Object.values(carts).filter(c=>c.demo).forEach(c=>{delete carts[c.id];pending['carts/'+c.id]={op:'delete'}});saveLocal();renderAll();flush();toast(t('demoCleared'))},
+  addFz:()=>{cfg.freezers.push({id:newId(),name:'Freezer '+(cfg.freezers.length+1),rows:3,cols:6,aisle:false});putCfg()},
+  rmFz:b=>{const f=cfg.freezers[+b.dataset.i];if(!f||cfg.freezers.length<2)return;cfg.freezers.splice(+b.dataset.i,1);fixForm();putCfg()},
+  addItem:b=>{const k=b.dataset.k,inp=$('#add-'+k),v=inp.value.trim();if(!v)return;if(!cfg[k].includes(v))cfg[k].push(v);putCfg()},
+  rmItem:b=>{cfg[b.dataset.k].splice(+b.dataset.i,1);if(b.dataset.k==='froms'&&!cfg.froms.includes(form.from))form.from='';putCfg()}
+};
+document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b||b.disabled)return;const f=A[b.dataset.act];if(f)f(b,e)});
+document.addEventListener('change',e=>{
+  const el=e.target;
+  if(sheet&&(el.id==='sOutTime'||el.id==='sTempT')){sheet.time=el.value;return}
+  const k=el.dataset&&el.dataset.cfg; if(!k) return;
+  const i=+el.dataset.i;
+  if(k==='shift') cfg.shift=el.value.trim();
+  else if(k==='fzname') cfg.freezers[i].name=el.value.trim()||'Freezer';
+  else if(k==='fzrows') cfg.freezers[i].rows=clampN(el.value,1,26,cfg.freezers[i].rows);
+  else if(k==='fzcols') cfg.freezers[i].cols=clampN(el.value,1,30,cfg.freezers[i].cols);
+  else if(k==='fzaisle') cfg.freezers[i].aisle=el.checked;
+  else if(k==='ready') cfg.readyTemp=el.value.trim();
+  else if(k==='day'){if(!/^\d\d:\d\d/.test(el.value))return;cfg.dayStart=el.value.slice(0,5)}
+  putCfg();
+});
+document.addEventListener('input',e=>{
+  if(!sheet)return;const id=e.target.id;
+  if(id==='sOutTemp'||id==='sTempV'){sheet.temp=e.target.value;if(id==='sOutTemp')refreshOutWarn()}
+  else if(id==='sNoteV'||id==='sHoldV')sheet.note=e.target.value;
+  else if(id==='sOutTime'||id==='sTempT')sheet.time=e.target.value;
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sheet)closeSheet();if(e.key==='Enter'&&(e.target.id==='rq'||e.target.id==='rqNote')){e.preventDefault();A.reqAdd()}if(e.key==='Enter'&&e.target.id&&e.target.id.startsWith('add-')){const b=e.target.parentNode.querySelector('[data-act="addItem"]');if(b)b.click()}});
+setInterval(()=>{if(view==='req'&&!sheet)renderReq();if(view==='inv'&&!sheet)renderInv();if(view==='new'&&!timeTouched)$('#fTime').value=hhmm(Date.now())},60000);
+$('#q').addEventListener('input',()=>renderInv());
+$('#fTime').addEventListener('input',()=>{timeTouched=true});
+$('#fCart').addEventListener('input',dupCheck);
+$('#fDate').addEventListener('change',onDateChange);
+$('#fTemp').addEventListener('input',()=>{$('#tempWarn').hidden=!isHot($('#fTemp').value)});
+$('#sDate').addEventListener('change',()=>{sDateTouched=true;renderSheet()});
+document.addEventListener('change',e=>{
+  if(e.target.id!=='bkFile'||!e.target.files||!e.target.files[0])return;
+  const r=new FileReader();
+  r.onload=()=>{try{const b=JSON.parse(r.result);if(!b||b.app!=='freezer-rte'||typeof b.carts!=='object')throw 0;bkPending=b;renderCfg()}catch(err){toast(t('bkBad'))}};
+  r.onerror=()=>toast(t('bkBad'));
+  r.readAsText(e.target.files[0]);
+});
+$('#sShift').addEventListener('change',()=>renderSheet());
+
+applyStatic();
+fixForm();resetForm(false);
+setView(view);
+connect();
+})();
+</script>
+
+<script>
+if('serviceWorker' in navigator){addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}
+</script>
+</body>
+</html>
